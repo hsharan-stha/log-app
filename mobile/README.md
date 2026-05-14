@@ -45,8 +45,14 @@ npm run sync
 
 ## Android (tablet / phone)
 
+**Full guide:** **[`mobile/ANDROID.md`](ANDROID.md)** (prerequisites, URL setup, emulator vs device, APK build, troubleshooting).
+
+Quick start:
+
 ```bash
 cd mobile/capacitor
+npm install
+npm run sync
 npx cap open android
 ```
 
