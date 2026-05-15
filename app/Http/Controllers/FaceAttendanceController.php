@@ -6,6 +6,7 @@ use App\Models\Attendance;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -36,11 +37,12 @@ class FaceAttendanceController extends Controller
             ], 422);
         }
 
-        $today = now()->toDateString();
+        /** Calendar date in app timezone (see config/app.php → APP_TIMEZONE) */
+        $attendanceDate = Date::today()->toDateString();
 
         $attendance = Attendance::query()->firstOrNew([
             'user_id' => $user->id,
-            'attendance_date' => $today,
+            'attendance_date' => $attendanceDate,
         ]);
 
         if ($attendance->checkin_time === null) {
@@ -101,7 +103,7 @@ class FaceAttendanceController extends Controller
             return null;
         }
 
-        $dir = 'attendance/'.now()->format('Y/m').'/'.$userId;
+        $dir = 'attendance/'.Date::now()->format('Y/m').'/'.$userId;
         $path = $dir.'/'.Str::uuid()->toString().'.jpg';
 
         Storage::disk('public')->put($path, $binary);

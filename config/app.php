@@ -59,13 +59,14 @@ return [
     | Application Timezone
     |--------------------------------------------------------------------------
     |
-    | Here you may specify the default timezone for your application, which
-    | will be used by the PHP date and date-time functions. The timezone
-    | is set to "UTC" by default as it is suitable for most use cases.
+    | Defines the calendar day for attendance (each date gets one check-in and
+    | one check-out). Set APP_TIMEZONE in ".env" to your office timezone
+    | (e.g. Asia/Kolkata). Leaving UTC while staff expect local midnight will
+    | cause "already completed today" messages on the wrong calendar day.
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => env('APP_TIMEZONE', 'UTC'),
 
     /*
     |--------------------------------------------------------------------------

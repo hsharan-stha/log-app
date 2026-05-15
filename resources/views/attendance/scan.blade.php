@@ -118,7 +118,7 @@
 
 <div class="attendance-kiosk__main">
     <div class="attendance-kiosk__video-wrap">
-        <video id="video" autoplay muted playsinline></video>
+        <video id="video" autoplay muted playsinline webkit-playsinline></video>
         <canvas id="face-overlay" aria-hidden="true"></canvas>
     </div>
     <canvas id="snapshot-canvas" class="d-none" aria-hidden="true"></canvas>
@@ -149,7 +149,16 @@
         const verifyUrl = @json(route('attendance.verify'));
 
         const STABILITY_MS = 2600;
-        const DETECT_INTERVAL_MS = 420;
+        /** iPhone/iPad WKWebView: faster cadence + smaller detector input = quicker first frame + box */
+        const isLikelyIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+            || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        /** Capacitor-injected bridge when app loads this URL inside the native wrapper */
+        const isNativeWebViewShell = typeof window.Capacitor !== 'undefined';
+
+        /** iOS / WKWebView: recycle camera on foreground; desktop tabs only pause/resume playback */
+        const aggressiveCameraLifecycle = isLikelyIOS || isNativeWebViewShell;
+
+        let DETECT_INTERVAL_MS = isLikelyIOS ? 260 : 420;
         const COOLDOWN_MS = 5500;
         const LOST_FACE_RESET_MS = 900;
 
@@ -157,11 +166,28 @@
         let cameraLive = false;
         let verifying = false;
         let tickBusy = false;
+        let resumeLock = false;
+        let layoutSyncBound = false;
+        /** @type {ResizeObserver|null} */
+        let videoWrapResizeObserver = null;
+
         let cooldownUntil = 0;
         let faceStableSince = null;
         let lastFaceSeenAt = 0;
         let tickTimer = null;
         let audioCtx = null;
+
+        let detectorOpts = null;
+
+        function getDetectorOptions() {
+            if (! detectorOpts) {
+                const inputSize = isLikelyIOS ? 320 : 416;
+                const scoreThreshold = isLikelyIOS ? 0.45 : 0.5;
+                detectorOpts = new faceapi.TinyFaceDetectorOptions({ inputSize, scoreThreshold });
+            }
+
+            return detectorOpts;
+        }
 
         async function loadModels() {
             try {
@@ -220,8 +246,99 @@
             if (!w || !h) {
                 return;
             }
+            overlayCtx.setTransform(1, 0, 0, 1, 0, 0);
             overlay.width = w;
             overlay.height = h;
+        }
+
+        /**
+         * iOS Safari sometimes leaves video.videoWidth === 0 until a frame pumps; bind all useful events.
+         */
+        function waitForVideoDimensions(videoEl, timeoutMs = 2500) {
+            return new Promise((resolve) => {
+                if (videoEl.videoWidth > 2 && videoEl.videoHeight > 2) {
+                    resolve();
+                    return;
+                }
+
+                let done = false;
+                const finish = () => {
+                    if (!done) {
+                        done = true;
+                        cleanup();
+                        resolve();
+                    }
+                };
+
+                /** @type {number|null} */
+                let vfcHandle = null;
+                const cleanup = () => {
+                    videoEl.removeEventListener('loadeddata', tick);
+                    videoEl.removeEventListener('loadedmetadata', tick);
+                    videoEl.removeEventListener('playing', tick);
+                    videoEl.removeEventListener('canplay', tick);
+                    if (vfcHandle != null && typeof videoEl.cancelVideoFrameCallback === 'function') {
+                        try {
+                            videoEl.cancelVideoFrameCallback(vfcHandle);
+                        } catch (ignoreErr) {
+                            /* noop */
+                        }
+                    }
+                    vfcHandle = null;
+                    window.clearTimeout(timer);
+                };
+
+                const tick = () => {
+                    if (videoEl.videoWidth > 2 && videoEl.videoHeight > 2) {
+                        finish();
+                    }
+                };
+
+                const timer = window.setTimeout(finish, timeoutMs);
+
+                videoEl.addEventListener('loadeddata', tick);
+                videoEl.addEventListener('loadedmetadata', tick);
+                videoEl.addEventListener('playing', tick);
+                videoEl.addEventListener('canplay', tick);
+
+                if ('requestVideoFrameCallback' in HTMLVideoElement.prototype) {
+                    const onFrame = () => {
+                        tick();
+                        if (! done && videoEl.srcObject) {
+                            vfcHandle = videoEl.requestVideoFrameCallback(onFrame);
+                        }
+                    };
+                    vfcHandle = videoEl.requestVideoFrameCallback(onFrame);
+                }
+            });
+        }
+
+        function bindLayoutSyncOnce() {
+            if (layoutSyncBound) {
+                return;
+            }
+            layoutSyncBound = true;
+
+            window.addEventListener('resize', resizeOverlay);
+            video.addEventListener('loadedmetadata', resizeOverlay);
+
+            /** Some WebKit builds fire `resize` on the video element when intrinsic size changes */
+            video.addEventListener('resize', resizeOverlay);
+
+            const wrap = video.closest('.attendance-kiosk__video-wrap');
+            if (wrap && typeof ResizeObserver !== 'undefined') {
+                videoWrapResizeObserver = new ResizeObserver(() => resizeOverlay());
+                videoWrapResizeObserver.observe(wrap);
+            }
+        }
+
+        async function runBurstDetection(count = isLikelyIOS ? 8 : 4) {
+            for (let i = 0; i < count && cameraLive && modelsReady && !verifying; i += 1) {
+                await detectionTick(Date.now());
+                await new Promise((r) => {
+                    window.setTimeout(r, isLikelyIOS ? 80 : 110);
+                });
+            }
         }
 
         function showResult(type, message) {
@@ -327,7 +444,7 @@
             let detection = null;
             try {
                 detection = await faceapi
-                    .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 }))
+                    .detectSingleFace(video, getDetectorOptions())
                     .withFaceLandmarks()
                     .withFaceDescriptor();
             } catch (e) {
@@ -378,23 +495,194 @@
                 clearInterval(tickTimer);
                 tickTimer = null;
             }
+            overlayCtx.setTransform(1, 0, 0, 1, 0, 0);
             overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+        }
+
+        function stopCameraTracks() {
+            const stream = video.srcObject;
+            if (stream) {
+                stream.getTracks().forEach((t) => {
+                    try {
+                        t.stop();
+                    } catch (ignore) {
+                        /* noop */
+                    }
+                });
+                video.srcObject = null;
+            }
+            cameraLive = false;
+            video.pause();
+        }
+
+        /**
+         * WKWebView / iOS: backgrounding freezes or kills tracks; discard on hide & acquire fresh stream on show.
+         */
+        async function resumePipelineAfterForeground() {
+            if (! modelsReady || resumeLock) {
+                return;
+            }
+            if (verifying) {
+                window.setTimeout(() => resumePipelineAfterForeground(), 320);
+
+                return;
+            }
+            resumeLock = true;
+            stopAttendanceLoop();
+            cameraLive = false;
+            btnStart.classList.add('d-none');
+
+            /** Brief beat so iOS tears down GPU capture cleanly */
+            await new Promise((r) => {
+                window.setTimeout(r, isLikelyIOS ? 120 : 40);
+            });
+
+            stopCameraTracks();
+
+            try {
+                statusEl.textContent = 'Reconnecting camera…';
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'user',
+                        /** Hint for faster preview on mobile */
+                        width: { ideal: 640 },
+                        height: { ideal: 480 },
+                    },
+                    audio: false,
+                });
+                video.srcObject = stream;
+                bindLayoutSyncOnce();
+                await video.play();
+                await waitForVideoDimensions(video);
+                await ensureAudio();
+                resizeOverlay();
+                cameraLive = true;
+                statusEl.textContent = 'Position your face in the frame.';
+                btnStart.classList.add('d-none');
+                /** Fast first paint of face box instead of waiting for first interval tick */
+                await runBurstDetection();
+                startAttendanceLoop();
+            } catch (e) {
+                console.error(e);
+                showResult('danger', 'Camera could not reconnect. Tap “Try camera again”.');
+                btnStart.classList.remove('d-none');
+                statusEl.textContent = 'Tap “Try camera again”.';
+            } finally {
+                resumeLock = false;
+            }
+        }
+
+        async function restartDesktopResume() {
+            if (resumeLock || verifying || ! modelsReady) {
+                return;
+            }
+            resumeLock = true;
+            stopAttendanceLoop();
+            tickBusy = false;
+            faceStableSince = null;
+            try {
+                if (! video.srcObject) {
+                    await startCamera();
+                    return;
+                }
+                await video.play();
+                await waitForVideoDimensions(video);
+                await ensureAudio();
+                cameraLive = true;
+                resizeOverlay();
+                statusEl.textContent = 'Position your face in the frame.';
+                await runBurstDetection(4);
+                startAttendanceLoop();
+            } catch (e) {
+                console.error(e);
+            } finally {
+                resumeLock = false;
+            }
         }
 
         async function startCamera() {
             statusEl.textContent = 'Requesting camera…';
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+            stopCameraTracks();
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: 'user',
+                    width: { ideal: 640 },
+                    height: { ideal: 480 },
+                },
+                audio: false,
+            });
             video.srcObject = stream;
+            bindLayoutSyncOnce();
             await video.play();
+            await waitForVideoDimensions(video);
             await ensureAudio();
             cameraLive = true;
+            resizeOverlay();
             statusEl.textContent = 'Position your face in the frame.';
             btnStart.classList.add('d-none');
-            resizeOverlay();
-            window.addEventListener('resize', resizeOverlay);
-            video.addEventListener('loadedmetadata', resizeOverlay, { once: true });
+            await runBurstDetection();
             startAttendanceLoop();
         }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                stopAttendanceLoop();
+                cameraLive = false;
+                tickBusy = false;
+                faceStableSince = null;
+                if (aggressiveCameraLifecycle) {
+                    if (! verifying) {
+                        stopCameraTracks();
+                    }
+                } else {
+                    try {
+                        video.pause();
+                    } catch (ignorePause) {
+                        /* noop */
+                    }
+                }
+
+                return;
+            }
+
+            if (! modelsReady) {
+                return;
+            }
+
+            if (aggressiveCameraLifecycle) {
+                resumePipelineAfterForeground();
+            } else {
+                restartDesktopResume();
+            }
+        });
+
+        window.addEventListener('pageshow', (event) => {
+            if (! event.persisted || ! modelsReady) {
+                return;
+            }
+
+            if (aggressiveCameraLifecycle) {
+                resumePipelineAfterForeground();
+            } else {
+                restartDesktopResume();
+            }
+        });
+
+        window.addEventListener('focus', () => {
+            if (! modelsReady || document.visibilityState !== 'visible' || verifying || resumeLock) {
+                return;
+            }
+
+            if (aggressiveCameraLifecycle && ! video.srcObject) {
+                resumePipelineAfterForeground();
+
+                return;
+            }
+
+            if (! aggressiveCameraLifecycle && ! video.srcObject) {
+                restartDesktopResume();
+            }
+        });
 
         btnStart.addEventListener('click', () => {
             resultEl.classList.add('d-none');
