@@ -6,7 +6,7 @@ use App\Models\Attendance;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -37,17 +37,24 @@ class FaceAttendanceController extends Controller
             ], 422);
         }
 
-        /** Calendar date in app timezone (see config/app.php → APP_TIMEZONE) */
-        $attendanceDate = Date::today()->toDateString();
+        /** Calendar day in app timezone — set APP_TIMEZONE in .env (e.g. Asia/Kolkata). */
+        $dateString = Carbon::now()->toDateString();
 
-        $attendance = Attendance::query()->firstOrNew([
-            'user_id' => $user->id,
-            'attendance_date' => $attendanceDate,
-        ]);
+        $attendance = Attendance::query()
+            ->where('user_id', $user->id)
+            ->whereDate('attendance_date', $dateString)
+            ->first();
+
+        if ($attendance === null) {
+            $attendance = new Attendance([
+                'user_id' => $user->id,
+                'attendance_date' => $dateString,
+            ]);
+        }
 
         if ($attendance->checkin_time === null) {
             $photoPath = $this->storeAttendanceSnapshot($data['snapshot'] ?? null, $user->id);
-            $attendance->checkin_time = now();
+            $attendance->checkin_time = Carbon::now();
             if ($photoPath !== null) {
                 $attendance->checkin_photo_path = $photoPath;
             }
@@ -63,7 +70,7 @@ class FaceAttendanceController extends Controller
 
         if ($attendance->checkout_time === null) {
             $photoPath = $this->storeAttendanceSnapshot($data['snapshot'] ?? null, $user->id);
-            $attendance->checkout_time = now();
+            $attendance->checkout_time = Carbon::now();
             if ($photoPath !== null) {
                 $attendance->checkout_photo_path = $photoPath;
             }
@@ -103,7 +110,7 @@ class FaceAttendanceController extends Controller
             return null;
         }
 
-        $dir = 'attendance/'.Date::now()->format('Y/m').'/'.$userId;
+        $dir = 'attendance/'.Carbon::now()->format('Y/m').'/'.$userId;
         $path = $dir.'/'.Str::uuid()->toString().'.jpg';
 
         Storage::disk('public')->put($path, $binary);
