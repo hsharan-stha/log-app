@@ -44,6 +44,7 @@ class StaffController extends Controller
             'email' => $request->validated('email'),
             'password' => Hash::make(config('staff.default_password')),
             'role' => 'staff',
+            'face_descriptor' => $request->validated('descriptor'),
         ]);
 
         return redirect()->route('admin.staff.index')->with('success', 'Staff member created.');

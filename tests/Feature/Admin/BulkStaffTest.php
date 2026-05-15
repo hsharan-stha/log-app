@@ -10,6 +10,29 @@ class BulkStaffTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_admin_can_create_staff_with_face_descriptor(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+        ]);
+
+        $descriptor = [0.1, 0.2, 0.3];
+
+        $response = $this->actingAs($admin)->post(route('admin.staff.store'), [
+            'name' => 'Photo Ready Staff',
+            'email' => 'photo-ready@example.com',
+            'descriptor' => $descriptor,
+        ]);
+
+        $response->assertRedirect(route('admin.staff.index'));
+
+        $staff = User::query()->where('email', 'photo-ready@example.com')->first();
+
+        $this->assertNotNull($staff);
+        $this->assertSame('staff', $staff->role);
+        $this->assertSame($descriptor, $staff->face_descriptor);
+    }
+
     public function test_admin_can_bulk_create_staff_with_default_password(): void
     {
         $admin = User::factory()->create([
