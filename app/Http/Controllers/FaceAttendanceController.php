@@ -89,7 +89,7 @@ class FaceAttendanceController extends Controller
         return response()->json([
             'ok' => false,
             'message' => sprintf(
-                'Attendance already completed for %s (calendar day in %s). If this is wrong, set APP_TIMEZONE in .env to your region and run: php artisan config:clear',
+                'Attendance already completed for %s (calendar day in %s).',
                 $dateString,
                 $tz
             ),
