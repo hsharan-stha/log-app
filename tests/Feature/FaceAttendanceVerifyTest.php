@@ -63,9 +63,10 @@ class FaceAttendanceVerifyTest extends TestCase
 
         $this->travelTo(Carbon::parse('2026-05-13 20:00:00', 'Asia/Kolkata'));
 
-        $this->postJson(route('attendance.verify'), ['descriptor' => $descriptor])
-            ->assertStatus(422)
-            ->assertJsonPath('message', 'Attendance already completed for today.');
+        $blocked = $this->postJson(route('attendance.verify'), ['descriptor' => $descriptor]);
+        $blocked->assertStatus(422);
+        $this->assertStringContainsString('already completed', (string) $blocked->json('message'));
+        $blocked->assertJsonPath('attendance_date', '2026-05-13');
 
         $this->travelTo(Carbon::parse('2026-05-14 09:00:00', 'Asia/Kolkata'));
 

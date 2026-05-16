@@ -37,8 +37,10 @@ class FaceAttendanceController extends Controller
             ], 422);
         }
 
-        /** Calendar day in app timezone — set APP_TIMEZONE in .env (e.g. Asia/Kolkata). */
-        $dateString = Carbon::now()->toDateString();
+        $tz = (string) config('app.timezone', 'UTC');
+        /** Calendar day in APP_TIMEZONE — must match your office (set in .env). */
+        $dateString = Carbon::now($tz)->toDateString();
+        $clock = Carbon::now($tz);
 
         $attendance = Attendance::query()
             ->where('user_id', $user->id)
@@ -54,7 +56,7 @@ class FaceAttendanceController extends Controller
 
         if ($attendance->checkin_time === null) {
             $photoPath = $this->storeAttendanceSnapshot($data['snapshot'] ?? null, $user->id);
-            $attendance->checkin_time = Carbon::now();
+            $attendance->checkin_time = $clock;
             if ($photoPath !== null) {
                 $attendance->checkin_photo_path = $photoPath;
             }
@@ -70,7 +72,7 @@ class FaceAttendanceController extends Controller
 
         if ($attendance->checkout_time === null) {
             $photoPath = $this->storeAttendanceSnapshot($data['snapshot'] ?? null, $user->id);
-            $attendance->checkout_time = Carbon::now();
+            $attendance->checkout_time = $clock;
             if ($photoPath !== null) {
                 $attendance->checkout_photo_path = $photoPath;
             }
@@ -86,8 +88,15 @@ class FaceAttendanceController extends Controller
 
         return response()->json([
             'ok' => false,
-            'message' => 'Attendance already completed for today.',
+            'message' => sprintf(
+                'Attendance already completed for %s (calendar day in %s). If this is wrong, set APP_TIMEZONE in .env to your region and run: php artisan config:clear',
+                $dateString,
+                $tz
+            ),
             'staff_name' => $user->name,
+            'attendance_date' => $dateString,
+            'app_timezone' => $tz,
+            'server_time' => $clock->toIso8601String(),
         ], 422);
     }
 
@@ -110,7 +119,7 @@ class FaceAttendanceController extends Controller
             return null;
         }
 
-        $dir = 'attendance/'.Carbon::now()->format('Y/m').'/'.$userId;
+        $dir = 'attendance/'.Carbon::now((string) config('app.timezone', 'UTC'))->format('Y/m').'/'.$userId;
         $path = $dir.'/'.Str::uuid()->toString().'.jpg';
 
         Storage::disk('public')->put($path, $binary);
