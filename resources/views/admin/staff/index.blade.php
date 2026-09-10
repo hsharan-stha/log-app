@@ -3,15 +3,19 @@
 @section('title', 'Staff')
 
 @section('content')
+    @include('admin.partials.academics-flow', [
+        'current' => 'teachers',
+        'primaryHref' => route('admin.staff.create'),
+        'primaryLabel' => 'Add teacher',
+        'nextHref' => route('admin.subjects.index'),
+        'nextLabel' => 'Subjects',
+    ])
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
         <div>
-            <h1 class="h3 mb-0">Staff</h1>
-            <p class="text-muted mb-0">Add people, register faces, and keep records tidy.</p>
+            <h1 class="h3 mb-0">Teachers</h1>
+            <p class="text-muted mb-0">Add teachers, register faces for the school kiosk.</p>
         </div>
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{{ route('admin.staff.create') }}" class="btn btn-primary">Add staff</a>
-            <a href="{{ route('admin.staff.bulk-create') }}" class="btn btn-outline-primary">Bulk add</a>
-        </div>
+        <a href="{{ route('admin.staff.bulk-create') }}" class="btn btn-outline-primary">Bulk add</a>
     </div>
 
     <div class="card border-0 shadow-sm">

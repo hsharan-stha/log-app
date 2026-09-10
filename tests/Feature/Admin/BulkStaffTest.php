@@ -23,8 +23,8 @@ class BulkStaffTest extends TestCase
         ]);
 
         $response->assertRedirect(route('admin.staff.index'));
-        $this->assertDatabaseHas('users', ['email' => 'one@example.com', 'role' => 'staff', 'name' => 'Person One']);
-        $this->assertDatabaseHas('users', ['email' => null, 'role' => 'staff', 'name' => 'Person Two']);
+        $this->assertDatabaseHas('users', ['email' => 'one@example.com', 'role' => 'teacher', 'name' => 'Person One']);
+        $this->assertDatabaseHas('users', ['email' => null, 'role' => 'teacher', 'name' => 'Person Two']);
 
         $one = User::query()->where('email', 'one@example.com')->first();
         $this->assertNotNull($one->password);
@@ -44,6 +44,6 @@ class BulkStaffTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors('list');
-        $this->assertEquals(0, User::query()->where('role', 'staff')->count());
+        $this->assertEquals(0, User::query()->where('role', 'teacher')->count());
     }
 }

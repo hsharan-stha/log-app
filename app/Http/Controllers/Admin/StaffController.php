@@ -20,9 +20,9 @@ class StaffController extends Controller
     public function index(): View
     {
         $staff = User::query()
-            ->where('role', 'staff')
+            ->where('role', 'teacher')
             ->orderBy('name')
-            ->paginate(15);
+            ->paginate(20);
 
         return view('admin.staff.index', compact('staff'));
     }
@@ -43,10 +43,10 @@ class StaffController extends Controller
             'name' => $request->validated('name'),
             'email' => $request->validated('email'),
             'password' => Hash::make(config('staff.default_password')),
-            'role' => 'staff',
+            'role' => 'teacher',
         ]);
 
-        return redirect()->route('admin.staff.index')->with('success', 'Staff member created.');
+        return redirect()->route('admin.staff.index')->with('success', 'Teacher created.');
     }
 
     public function bulkStore(StoreBulkStaffRequest $request): RedirectResponse
@@ -61,7 +61,7 @@ class StaffController extends Controller
                     'name' => $row['name'],
                     'email' => $row['email'],
                     'password' => $password,
-                    'role' => 'staff',
+                    'role' => 'teacher',
                 ]);
                 $n++;
             }
@@ -69,19 +69,19 @@ class StaffController extends Controller
             return $n;
         });
 
-        return redirect()->route('admin.staff.index')->with('success', "Created {$count} staff member(s).");
+        return redirect()->route('admin.staff.index')->with('success', "Created {$count} teacher(s).");
     }
 
     public function edit(User $staff): View
     {
-        $this->ensureStaff($staff);
+        $this->ensureTeacher($staff);
 
         return view('admin.staff.edit', ['staff' => $staff]);
     }
 
     public function update(UpdateStaffRequest $request, User $staff): RedirectResponse
     {
-        $this->ensureStaff($staff);
+        $this->ensureTeacher($staff);
 
         $data = $request->validated();
 
@@ -93,28 +93,28 @@ class StaffController extends Controller
 
         $staff->update($data);
 
-        return redirect()->route('admin.staff.index')->with('success', 'Staff member updated.');
+        return redirect()->route('admin.staff.index')->with('success', 'Teacher updated.');
     }
 
     public function destroy(User $staff): RedirectResponse
     {
-        $this->ensureStaff($staff);
+        $this->ensureTeacher($staff);
 
         $staff->delete();
 
-        return redirect()->route('admin.staff.index')->with('success', 'Staff member deleted.');
+        return redirect()->route('admin.staff.index')->with('success', 'Teacher deleted.');
     }
 
     public function registerFace(User $staff): View
     {
-        $this->ensureStaff($staff);
+        $this->ensureTeacher($staff);
 
         return view('admin.staff.register-face', ['staff' => $staff]);
     }
 
     public function storeFaceDescriptor(StoreFaceDescriptorRequest $request, User $staff): RedirectResponse|JsonResponse
     {
-        $this->ensureStaff($staff);
+        $this->ensureTeacher($staff);
 
         $staff->update([
             'face_descriptor' => $request->validated('descriptor'),
@@ -131,8 +131,8 @@ class StaffController extends Controller
         return redirect()->route('admin.staff.index')->with('success', 'Face registered for '.$staff->name.'.');
     }
 
-    private function ensureStaff(User $user): void
+    private function ensureTeacher(User $user): void
     {
-        abort_unless($user->role === 'staff', 404);
+        abort_unless($user->role === 'teacher', 404);
     }
 }

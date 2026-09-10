@@ -1,19 +1,24 @@
 @extends('layouts.admin')
 
-@section('title', 'Staff monthly attendance')
+@section('title', ($staff->isTeacher() ? 'Teacher' : 'Student').' monthly attendance')
 
 @section('content')
+    @include('admin.partials.reports-flow', [
+        'current' => $staff->isTeacher() ? 'teachers' : 'students',
+    ])
+
     <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
         <div>
             <h1 class="h3 mb-1">{{ $staff->name }}</h1>
             <p class="text-muted mb-0">
+                <span class="badge text-bg-light border text-capitalize me-1">{{ $staff->role }}</span>
                 Day-by-day attendance for {{ $monthLabel }}.
                 <span class="text-body fw-semibold ms-1">Total time: {{ $summary['total_work_label'] }}</span>
                 <span class="text-muted">({{ $summary['total_work_decimal_hours'] }} h)</span>
             </p>
         </div>
         <div class="d-flex flex-wrap gap-2">
-            <a class="btn btn-outline-secondary rounded-3" href="{{ route('admin.reports.attendance', ['month' => $month]) }}">← All staff</a>
+            <a class="btn btn-outline-secondary rounded-3" href="{{ route('admin.reports.attendance', ['month' => $month, 'role' => $staff->isTeacher() ? 'teacher' : 'student']) }}">← Back to report</a>
         </div>
     </div>
 

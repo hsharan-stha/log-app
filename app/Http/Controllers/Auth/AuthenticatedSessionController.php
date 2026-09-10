@@ -30,13 +30,9 @@ class AuthenticatedSessionController extends Controller
 
         $user = $request->user();
 
-        if ($user->isAdmin()) {
-            return redirect()->intended(route('admin.dashboard', absolute: false));
-        }
-
         $request->session()->forget('url.intended');
 
-        return redirect()->route('staff.register-face');
+        return redirect()->route($user->homeRoute());
     }
 
     /**

@@ -51,12 +51,12 @@
             const statusEl = document.getElementById('status');
             const alertEl = document.getElementById('alert');
             const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-            const postUrl = @json(($faceRegistrationContext ?? 'admin') === 'self'
-                ? route('staff.register-face.store')
-                : route('admin.staff.register-face.store', $staff));
-            const redirectFallback = @json(($faceRegistrationContext ?? 'admin') === 'self'
-                ? route('staff.register-face')
-                : route('admin.staff.index'));
+            const postUrl = @json($facePostUrl ?? (($faceRegistrationContext ?? 'admin') === 'self'
+                ? route('teacher.face.store')
+                : route('admin.staff.register-face.store', $staff)));
+            const redirectFallback = @json($faceRedirectUrl ?? (($faceRegistrationContext ?? 'admin') === 'self'
+                ? route('teacher.dashboard')
+                : route('admin.staff.index')));
 
             let modelsReady = false;
 

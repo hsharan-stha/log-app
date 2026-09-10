@@ -6,7 +6,7 @@
     <div class="card shadow-sm border-0">
         <div class="card-body p-4">
             <h1 class="h4 mb-3 text-center">Sign in</h1>
-            <p class="text-muted small text-center mb-4">Admins manage the console. Staff can sign in only to register a face for the kiosk.</p>
+            <p class="text-muted small text-center mb-4">School portal for principal, teachers, students, and guardians.</p>
 
             @if(session('status'))
                 <div class="alert alert-info small">{{ session('status') }}</div>
@@ -39,7 +39,7 @@
         </div>
     </div>
     <p class="text-center text-muted small mt-3 mb-0">
-        <a href="{{ url('/attendance') }}">Staff attendance kiosk</a>
+        <a href="{{ route('login') }}">Sign in</a> with the attendance account to open the kiosk
         ·
         <a href="{{ url('/') }}">Home</a>
     </p>

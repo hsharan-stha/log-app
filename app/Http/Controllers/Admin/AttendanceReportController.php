@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
+use App\Models\SchoolClass;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -34,12 +35,13 @@ class AttendanceReportController extends Controller
             ->get()
             ->keyBy('user_id');
 
-        $staff = User::query()
-            ->where('role', 'staff')
+        $people = User::query()
+            ->whereIn('role', ['teacher', 'student'])
+            ->with('schoolClass')
             ->orderBy('name')
-            ->get(['id', 'name', 'email']);
+            ->get(['id', 'name', 'email', 'role', 'class_id', 'roll_number']);
 
-        $rows = $staff->map(function (User $user) use ($aggregates, $workingWeekdays): array {
+        $mapRow = function (User $user) use ($aggregates, $workingWeekdays): array {
             $a = $aggregates->get($user->id);
 
             $withRecord = (int) ($a->days_with_record ?? 0);
@@ -54,12 +56,61 @@ class AttendanceReportController extends Controller
                 'incomplete_days' => $incomplete,
                 'no_record_weekdays' => max(0, $workingWeekdays - $withRecord),
             ];
-        });
+        };
+
+        $teacherRows = $people->where('role', 'teacher')->values()->map($mapRow);
+        $studentRows = $people->where('role', 'student')->values()->map($mapRow);
+
+        $role = $request->query('role', 'all');
+        if (! in_array($role, ['all', 'teacher', 'student'], true)) {
+            $role = 'all';
+        }
 
         return view('admin.reports.attendance-monthly', [
             'month' => $month,
             'monthLabel' => $start->translatedFormat('F Y'),
-            'rows' => $rows,
+            'teacherRows' => $teacherRows,
+            'studentRows' => $studentRows,
+            'role' => $role,
+            'reportKind' => 'all',
+        ]);
+    }
+
+    public function teachers(Request $request): View
+    {
+        $request->merge(['role' => 'teacher']);
+
+        return $this->monthly($request)->with([
+            'reportKind' => 'teacher',
+            'reportTitle' => 'Teacher attendance report',
+            'reportBlurb' => 'Monthly weekday summary for teachers.',
+        ]);
+    }
+
+    public function students(Request $request): View
+    {
+        $classId = $request->string('class_id')->toString();
+        $request->merge(['role' => 'student']);
+
+        $view = $this->monthly($request);
+
+        $data = $view->getData();
+        $studentRows = $data['studentRows'];
+
+        if ($classId !== '' && $classId !== 'all') {
+            $studentRows = $studentRows
+                ->filter(fn (array $row) => (string) ($row['user']->class_id ?? '') === (string) $classId)
+                ->values();
+        }
+
+        return $view->with([
+            'reportKind' => 'student',
+            'reportTitle' => 'Student attendance report',
+            'reportBlurb' => 'Monthly weekday summary for students.',
+            'studentRows' => $studentRows,
+            'classId' => $classId !== '' ? $classId : 'all',
+            'classes' => SchoolClass::query()->orderBy('sort_order')->orderBy('name')->get(),
+            'showStudentMeta' => true,
         ]);
     }
 
@@ -163,6 +214,6 @@ class AttendanceReportController extends Controller
 
     private function ensureStaff(User $user): void
     {
-        abort_unless($user->role === 'staff', 404);
+        abort_unless(in_array($user->role, ['teacher', 'student'], true), 404);
     }
 }

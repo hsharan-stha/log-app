@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Staff attendance — {{ config('app.name', 'Face Attendance') }}</title>
+    <title>School attendance — {{ config('app.name', 'ABIS Portal') }}</title>
     <link href="{{ asset('vendor/bootstrap/5.3.3/css/bootstrap.min.css') }}" rel="stylesheet">
     <style>
         html {
@@ -112,8 +112,20 @@
 </head>
 <body class="bg-light attendance-kiosk">
 <header class="attendance-kiosk__header bg-white">
-    <h1 class="fw-semibold">Staff attendance</h1>
-    <p class="mb-0">Stand in view — after ~3 seconds with a steady face, check-in or check-out runs automatically.</p>
+    <div class="d-flex justify-content-between align-items-start gap-3">
+        <div>
+            <h1 class="fw-semibold">School attendance</h1>
+            <p class="mb-0">Students &amp; teachers — stand in view; after ~3 seconds with a steady face, check-in or check-out runs automatically.</p>
+        </div>
+        <div class="text-end flex-shrink-0">
+            <div class="small text-muted">{{ auth()->user()->name }}</div>
+            <a class="small" href="{{ route('attendance.home') }}">Home</a>
+            <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                @csrf
+                <button class="btn btn-link btn-sm p-0 align-baseline" type="submit">Sign out</button>
+            </form>
+        </div>
+    </div>
 </header>
 
 <div class="attendance-kiosk__main">
@@ -147,6 +159,18 @@
         const resultEl = document.getElementById('result');
         const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         const verifyUrl = @json(route('attendance.verify'));
+        @if(session('kiosk_plain_token'))
+        try { localStorage.setItem('kiosk_device_token', @json(session('kiosk_plain_token'))); } catch (e) {}
+        @endif
+
+        function kioskDeviceToken() {
+            try {
+                const fromStore = localStorage.getItem('kiosk_device_token');
+                if (fromStore) return fromStore;
+            } catch (e) {}
+            const match = document.cookie.match(/(?:^|; )kiosk_device_token=([^;]*)/);
+            return match ? decodeURIComponent(match[1]) : '';
+        }
 
         const STABILITY_MS = 2600;
         const DETECT_INTERVAL_MS = 420;
@@ -262,7 +286,9 @@
                         Accept: 'application/json',
                         'X-CSRF-TOKEN': csrf,
                         'X-Requested-With': 'XMLHttpRequest',
+                        'X-Kiosk-Device-Token': kioskDeviceToken(),
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify({ descriptor, snapshot }),
                 });
 

@@ -32,10 +32,10 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect(route('admin.dashboard', absolute: false));
     }
 
-    public function test_staff_users_are_redirected_to_face_registration_after_login(): void
+    public function test_teacher_users_are_redirected_to_teacher_dashboard_after_login(): void
     {
         $user = User::factory()->create([
-            'role' => 'staff',
+            'role' => 'teacher',
         ]);
 
         $response = $this->post('/login', [
@@ -44,13 +44,13 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('staff.register-face', absolute: false));
+        $response->assertRedirect(route('teacher.dashboard', absolute: false));
     }
 
-    public function test_staff_users_cannot_open_admin_dashboard(): void
+    public function test_teacher_users_cannot_open_admin_dashboard(): void
     {
         $user = User::factory()->create([
-            'role' => 'staff',
+            'role' => 'teacher',
         ]);
 
         $response = $this->actingAs($user)->get(route('admin.dashboard'));

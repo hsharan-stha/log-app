@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Attendance;
 use App\Models\User;
+use App\Notifications\StudentAttendanceAlert;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -19,6 +21,11 @@ class FaceAttendanceController extends Controller
         return view('attendance.scan');
     }
 
+    public function unauthorized(): View
+    {
+        return view('attendance.unauthorized');
+    }
+
     public function verify(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -27,12 +34,12 @@ class FaceAttendanceController extends Controller
             'snapshot' => ['nullable', 'string', 'max:6500000'],
         ]);
 
-        ['user' => $user] = face_find_matching_staff($data['descriptor'], 0.5);
+        ['user' => $user] = face_find_matching_person($data['descriptor'], 0.5);
 
-        if (! $user instanceof User) {
+        if (! $user instanceof User || ! $user->canUseFaceAttendance()) {
             return response()->json([
                 'ok' => false,
-                'message' => 'No matching staff face found. Try again or ask an admin to register your face.',
+                'message' => 'No matching student or teacher face found. Try again or ask the office to register the face.',
             ], 422);
         }
 
@@ -51,10 +58,14 @@ class FaceAttendanceController extends Controller
             }
             $attendance->save();
 
+            $this->notifyGuardiansIfStudent($user, 'checkin');
+
             return response()->json([
                 'ok' => true,
                 'message' => 'Check-in recorded successfully.',
                 'staff_name' => $user->name,
+                'person_name' => $user->name,
+                'role' => $user->role,
                 'action' => 'checkin',
             ]);
         }
@@ -67,10 +78,14 @@ class FaceAttendanceController extends Controller
             }
             $attendance->save();
 
+            $this->notifyGuardiansIfStudent($user, 'checkout');
+
             return response()->json([
                 'ok' => true,
                 'message' => 'Check-out recorded successfully.',
                 'staff_name' => $user->name,
+                'person_name' => $user->name,
+                'role' => $user->role,
                 'action' => 'checkout',
             ]);
         }
@@ -79,12 +94,29 @@ class FaceAttendanceController extends Controller
             'ok' => false,
             'message' => 'Attendance already completed for today.',
             'staff_name' => $user->name,
+            'person_name' => $user->name,
+            'role' => $user->role,
         ], 422);
     }
 
-    /**
-     * Accept a data URL (JPEG) from the kiosk canvas and store it on the public disk.
-     */
+    private function notifyGuardiansIfStudent(User $user, string $action): void
+    {
+        if (! $user->isStudent()) {
+            return;
+        }
+
+        $user->loadMissing(['guardians', 'schoolClass']);
+
+        if ($user->guardians->isEmpty()) {
+            return;
+        }
+
+        Notification::send(
+            $user->guardians,
+            new StudentAttendanceAlert($user, $action, now()->format('H:i'))
+        );
+    }
+
     private function storeAttendanceSnapshot(?string $dataUrl, int $userId): ?string
     {
         if ($dataUrl === null || $dataUrl === '') {

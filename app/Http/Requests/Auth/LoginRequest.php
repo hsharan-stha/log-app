@@ -51,7 +51,17 @@ class LoginRequest extends FormRequest
         }
 
         $user = Auth::user();
-        if (! $user->isAdmin() && ! $user->isStaff()) {
+        if (
+            ! $user->isAdmin()
+            && ! $user->isTeacher()
+            && ! $user->isStudent()
+            && ! $user->isGuardian()
+            && ! $user->isAttendance()
+            && ! $user->isHr()
+            && ! $user->isFinance()
+            && ! $user->isOfficeStaff()
+            && ! $user->isOther()
+        ) {
             Auth::logout();
 
             RateLimiter::hit($this->throttleKey());

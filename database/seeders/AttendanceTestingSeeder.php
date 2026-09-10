@@ -33,7 +33,7 @@ class AttendanceTestingSeeder extends Seeder
                 [
                     'name' => $row['name'],
                     'password' => $password,
-                    'role' => 'staff',
+                    'role' => 'teacher',
                 ]
             );
             $staffIds[] = $user->id;

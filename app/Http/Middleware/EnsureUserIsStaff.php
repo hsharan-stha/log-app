@@ -6,17 +6,20 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Kept for the `staff` middleware alias; teachers only.
+ */
 class EnsureUserIsStaff
 {
     /**
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): Response  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
 
-        if (! $user || $user->role !== 'staff') {
-            abort(403, 'Staff self-service only.');
+        if (! $user || ! $user->isTeacher()) {
+            abort(403);
         }
 
         return $next($request);

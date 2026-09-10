@@ -99,20 +99,29 @@
         .att-snap__time--out { background: rgba(13, 110, 253, 0.12); color: #0a58ca; }
         .att-snap__time--empty { background: #f1f3f7; color: #8b939e; font-weight: 500; }
 
-        /* Admin shell: fixed sidebar, scrollable main only */
+        /* Admin shell */
         .admin-shell {
             display: flex;
             height: 100vh;
             max-height: 100vh;
             overflow: hidden;
+            --sidebar-bg: #0f172a;
+            --sidebar-border: rgba(148, 163, 184, 0.12);
+            --sidebar-muted: #94a3b8;
+            --sidebar-text: #e2e8f0;
+            --sidebar-active: #38bdf8;
+            --sidebar-active-bg: rgba(56, 189, 248, 0.12);
         }
         .admin-shell__sidebar {
             flex: 0 0 auto;
-            width: clamp(220px, 18vw, 280px);
+            width: clamp(240px, 18vw, 288px);
             height: 100%;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+            border-right: 1px solid var(--sidebar-border);
+            color: var(--sidebar-text);
         }
         .admin-shell__sidebar-inner {
             display: flex;
@@ -121,10 +130,139 @@
             min-height: 0;
             height: 100%;
         }
+        .admin-shell__brand {
+            flex-shrink: 0;
+            padding: 1.25rem 1.15rem 1.1rem;
+            border-bottom: 1px solid var(--sidebar-border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .admin-shell__brand-mark {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 0.02em;
+            color: #0f172a;
+            background: linear-gradient(145deg, #e2e8f0 0%, #38bdf8 100%);
+            flex-shrink: 0;
+        }
+        .admin-shell__brand-title {
+            font-size: 0.95rem;
+            font-weight: 650;
+            line-height: 1.2;
+            color: #f8fafc;
+        }
+        .admin-shell__brand-sub {
+            font-size: 0.72rem;
+            color: var(--sidebar-muted);
+            margin-top: 0.15rem;
+        }
         .admin-shell__sidebar-nav {
             flex: 1 1 auto;
             min-height: 0;
             overflow-y: auto;
+            padding: 0.85rem 0.75rem 1rem;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(148,163,184,.35) transparent;
+        }
+        .admin-nav-group {
+            margin: 1rem 0.55rem 0.4rem;
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: 650;
+        }
+        .admin-nav-group:first-child { margin-top: 0.15rem; }
+        .admin-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            padding: 0.55rem 0.75rem;
+            margin-bottom: 0.15rem;
+            border-radius: 0.7rem;
+            color: var(--sidebar-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background-color .15s ease, color .15s ease;
+            border: 1px solid transparent;
+        }
+        .admin-nav-link:hover {
+            color: #f1f5f9;
+            background: rgba(148, 163, 184, 0.08);
+        }
+        .admin-nav-link.is-active {
+            color: #f0f9ff;
+            background: var(--sidebar-active-bg);
+            border-color: rgba(56, 189, 248, 0.18);
+            box-shadow: inset 3px 0 0 var(--sidebar-active);
+        }
+        .admin-nav-link svg {
+            width: 17px;
+            height: 17px;
+            flex-shrink: 0;
+            opacity: 0.85;
+        }
+        .admin-nav-link.is-active svg { opacity: 1; color: var(--sidebar-active); }
+        .admin-shell__footer {
+            flex-shrink: 0;
+            padding: 0.9rem 0.85rem 1rem;
+            border-top: 1px solid var(--sidebar-border);
+            background: rgba(0,0,0,0.18);
+        }
+        .admin-shell__user {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            margin-bottom: 0.75rem;
+            min-width: 0;
+        }
+        .admin-shell__user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 999px;
+            display: grid;
+            place-items: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #e2e8f0;
+            background: #1e293b;
+            border: 1px solid rgba(148,163,184,0.25);
+            flex-shrink: 0;
+        }
+        .admin-shell__user-meta { min-width: 0; }
+        .admin-shell__user-name {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #f1f5f9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .admin-shell__user-role {
+            font-size: 0.7rem;
+            color: var(--sidebar-muted);
+        }
+        .admin-shell__logout {
+            width: 100%;
+            border: 1px solid rgba(148,163,184,0.22);
+            background: transparent;
+            color: #cbd5e1;
+            border-radius: 0.65rem;
+            padding: 0.45rem 0.75rem;
+            font-size: 0.82rem;
+            font-weight: 500;
+        }
+        .admin-shell__logout:hover {
+            background: rgba(248, 113, 113, 0.12);
+            border-color: rgba(248, 113, 113, 0.35);
+            color: #fecaca;
         }
         .admin-shell__main {
             flex: 1 1 auto;
@@ -133,37 +271,148 @@
             overflow-y: auto;
             overflow-x: hidden;
             -webkit-overflow-scrolling: touch;
+            background: #f8fafc;
         }
+        .academic-step-card { border-radius: 1rem; }
     </style>
     @stack('styles')
 </head>
 <body class="bg-light overflow-hidden">
+@php
+    $adminUser = auth()->user();
+    $adminInitial = \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($adminUser?->name ?? 'A', 0, 1));
+    $isHr = $adminUser?->isHr() ?? false;
+    $isAdmin = $adminUser?->isAdmin() ?? false;
+@endphp
 <div class="admin-shell">
-        <aside class="admin-shell__sidebar px-0 bg-dark text-white shadow">
+        <aside class="admin-shell__sidebar">
             <div class="admin-shell__sidebar-inner">
-                <div class="p-4 border-bottom border-secondary flex-shrink-0">
-                    <div class="fw-semibold">Face Attendance</div>
-                    <small class="text-white-50">Admin panel</small>
+                <div class="admin-shell__brand">
+                    <div class="admin-shell__brand-mark" aria-hidden="true">AB</div>
+                    <div>
+                        <div class="admin-shell__brand-title">ABIS Portal</div>
+                        <div class="admin-shell__brand-sub">{{ $isHr ? 'HR office' : 'School administration' }}</div>
+                    </div>
                 </div>
-                <nav class="admin-shell__sidebar-nav nav flex-column px-2 py-3 gap-1">
-                    <a class="nav-link rounded px-3 py-2 {{ request()->routeIs('admin.dashboard') ? 'bg-secondary text-white' : 'text-white-50' }}"
-                       href="{{ route('admin.dashboard') }}">Dashboard</a>
-                    <a class="nav-link rounded px-3 py-2 {{ request()->routeIs('admin.staff.*') ? 'bg-secondary text-white' : 'text-white-50' }}"
-                       href="{{ route('admin.staff.index') }}">Staff</a>
-                    <a class="nav-link rounded px-3 py-2 {{ request()->routeIs('admin.attendance.*') ? 'bg-secondary text-white' : 'text-white-50' }}"
-                       href="{{ route('admin.attendance.index') }}">Attendance</a>
-                    <a class="nav-link rounded px-3 py-2 {{ request()->routeIs('admin.reports.*') ? 'bg-secondary text-white' : 'text-white-50' }}"
-                       href="{{ route('admin.reports.attendance') }}">Reports</a>
+
+                <nav class="admin-shell__sidebar-nav" aria-label="Admin">
+                    @if($isAdmin)
+                    <a class="admin-nav-link {{ request()->routeIs('admin.dashboard') ? 'is-active' : '' }}"
+                       href="{{ route('admin.dashboard') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z"/></svg>
+                        Dashboard
+                    </a>
+                    @endif
+
+                    <div class="admin-nav-group">Academics</div>
+                    <a class="admin-nav-link {{ request()->routeIs('admin.academics.*') ? 'is-active' : '' }}"
+                       href="{{ route('admin.academics.index') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+                        Setup hub
+                    </a>
+                    <a class="admin-nav-link {{ request()->routeIs('admin.classes.*') ? 'is-active' : '' }}"
+                       href="{{ route('admin.classes.index') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5h16v14H4Z"/><path d="M8 9h8M8 13h5"/></svg>
+                        Classes
+                    </a>
+                    <a class="admin-nav-link {{ request()->routeIs('admin.staff.*') ? 'is-active' : '' }}"
+                       href="{{ route('admin.staff.index') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1"/><circle cx="9.5" cy="7.5" r="3"/><path d="M20 19v-1a3.5 3.5 0 0 0-2.5-3.35"/><path d="M16.5 4.7a3 3 0 0 1 0 5.6"/></svg>
+                        Teachers
+                    </a>
+                    <a class="admin-nav-link {{ request()->routeIs('admin.subjects.*') ? 'is-active' : '' }}"
+                       href="{{ route('admin.subjects.index') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h9a3 3 0 0 1 3 3v13H8a3 3 0 0 0-3 3V4Z"/><path d="M17 7h2a2 2 0 0 1 2 2v11"/></svg>
+                        Subjects
+                    </a>
+                    <a class="admin-nav-link {{ request()->routeIs('admin.courses.*') ? 'is-active' : '' }}"
+                       href="{{ route('admin.courses.index') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4 4 8l8 4 8-4-8-4Z"/><path d="M4 12l8 4 8-4"/><path d="M4 16l8 4 8-4"/></svg>
+                        Courses
+                    </a>
+
+                    <div class="admin-nav-group">People</div>
+                    <a class="admin-nav-link {{ request()->routeIs('admin.people.*') ? 'is-active' : '' }}"
+                       href="{{ route('admin.people.index') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+                        Setup hub
+                    </a>
+                    <a class="admin-nav-link {{ request()->routeIs('admin.students.*') ? 'is-active' : '' }}"
+                       href="{{ route('admin.students.index') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="M5 11v5c0 1.5 3.1 3 7 3s7-1.5 7-3v-5"/></svg>
+                        Students
+                    </a>
+                    <a class="admin-nav-link {{ request()->routeIs('admin.guardians.*') ? 'is-active' : '' }}"
+                       href="{{ route('admin.guardians.index') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z"/><path d="M4 20a8 8 0 0 1 16 0"/></svg>
+                        Guardians
+                    </a>
+
+                    @if($isAdmin)
+                    <div class="admin-nav-group">Attendance</div>
+                    <a class="admin-nav-link {{ request()->routeIs('admin.attendance.*') ? 'is-active' : '' }}"
+                       href="{{ route('admin.attendance.index') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M8 3.5V7M16 3.5V7M3.5 10h17"/></svg>
+                        Calendar
+                    </a>
+                    <a class="admin-nav-link {{ request()->routeIs('admin.reports.*') ? 'is-active' : '' }}"
+                       href="{{ route('admin.reports.index') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 19V9M10 19V5M15 19v-7M20 19V8"/></svg>
+                        Reports
+                    </a>
+
+                    <div class="admin-nav-group">School</div>
+                    <a class="admin-nav-link {{ request()->routeIs('admin.notices.*') ? 'is-active' : '' }}"
+                       href="{{ route('admin.notices.index') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 6h11l3 3v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z"/><path d="M8 11h8M8 15h5"/></svg>
+                        Notices
+                    </a>
+                    <a class="admin-nav-link {{ request()->routeIs('admin.office-users.*') ? 'is-active' : '' }}"
+                       href="{{ route('admin.office-users.index') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1"/><circle cx="9.5" cy="7.5" r="3"/><path d="M20 19v-1a3.5 3.5 0 0 0-2.5-3.35"/><path d="M16.5 4.7a3 3 0 0 1 0 5.6"/></svg>
+                        Office users
+                    </a>
+                    <a class="admin-nav-link {{ request()->routeIs('finance.*') ? 'is-active' : '' }}"
+                       href="{{ route('finance.dashboard') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16v10H4z"/><path d="M8 11h8M8 15h5"/></svg>
+                        Billing
+                    </a>
+                    <a class="admin-nav-link {{ request()->routeIs('messages.*') ? 'is-active' : '' }}"
+                       href="{{ route('messages.index') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 6h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H9l-4 3v-3H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z"/></svg>
+                        Messages
+                    </a>
+                    <a class="admin-nav-link {{ request()->routeIs('admin.devices.*') ? 'is-active' : '' }}"
+                       href="{{ route('admin.devices.index') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M11 17h2"/></svg>
+                        Kiosk devices
+                    </a>
+                    @else
+                    <div class="admin-nav-group">School</div>
+                    <a class="admin-nav-link {{ request()->routeIs('messages.*') ? 'is-active' : '' }}"
+                       href="{{ route('messages.index') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 6h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H9l-4 3v-3H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z"/></svg>
+                        Messages
+                    </a>
+                    @endif
                 </nav>
-                <div class="p-3 border-top border-secondary flex-shrink-0">
+
+                <div class="admin-shell__footer">
+                    <div class="admin-shell__user">
+                        <div class="admin-shell__user-avatar" aria-hidden="true">{{ $adminInitial }}</div>
+                        <div class="admin-shell__user-meta">
+                            <div class="admin-shell__user-name">{{ $adminUser?->name ?? 'User' }}</div>
+                            <div class="admin-shell__user-role">{{ $adminUser?->roleLabel() ?? '' }}</div>
+                        </div>
+                    </div>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button class="btn btn-outline-light w-100" type="submit">Logout</button>
+                        <button class="admin-shell__logout" type="submit">Sign out</button>
                     </form>
                 </div>
             </div>
         </aside>
-        <main class="admin-shell__main px-4 py-4 bg-light">
+        <main class="admin-shell__main px-4 py-4">
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     {{ session('success') }}

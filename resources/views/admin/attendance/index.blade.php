@@ -1,107 +1,83 @@
 @extends('layouts.admin')
 
-@section('title', 'Attendance logs')
+@section('title', 'Attendance calendar')
 
 @section('content')
-    <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
         <div>
-            <h1 class="h3 mb-1">Attendance</h1>
-            <p class="text-muted mb-0">Daily check-in and check-out with kiosk snapshots.</p>
+            <h1 class="h3 mb-1">Attendance calendar</h1>
+            <p class="text-muted mb-0">
+                Teachers &amp; students · {{ $eligibleTotal }} people on roll.
+                Click a day for photos and absences.
+            </p>
         </div>
-    </div>
-
-    <div class="card border-0 shadow-sm mb-4 overflow-hidden">
-        <div class="card-body py-3 px-4 bg-white border-bottom" style="background: linear-gradient(180deg, #fafbfc 0%, #fff 100%) !important;">
-            <form class="row g-3 align-items-end" method="GET" action="{{ route('admin.attendance.index') }}">
-                <div class="col-sm-auto">
-                    <label for="date" class="form-label small text-muted mb-1 fw-semibold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.08em;">Filter by date</label>
-                    <input type="date" class="form-control form-control-lg shadow-sm" id="date" name="date" value="{{ $date }}"
-                           style="min-width: 200px; border-radius: 10px;">
-                </div>
-                <div class="col-sm-auto d-flex gap-2">
-                    <button class="btn btn-primary btn-lg px-4 rounded-3 shadow-sm" type="submit">Apply</button>
-                    @if($date)
-                        <a class="btn btn-outline-secondary btn-lg rounded-3" href="{{ route('admin.attendance.index') }}">Reset</a>
-                    @endif
-                </div>
-                @if($date)
-                    <div class="col-sm d-flex align-items-end">
-                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-2">
-                            Showing {{ \Illuminate\Support\Carbon::parse($date)->toFormattedDateString() }}
-                        </span>
-                    </div>
-                @endif
+        <div class="d-flex align-items-center gap-2">
+            <a class="btn btn-outline-secondary" href="{{ route('admin.attendance.index', ['month' => $prevMonth]) }}">← Prev</a>
+            <form method="GET" action="{{ route('admin.attendance.index') }}" class="d-flex gap-2">
+                <input type="month" name="month" value="{{ $month }}" class="form-control" style="width: 11rem;" onchange="this.form.submit()">
             </form>
+            <a class="btn btn-outline-secondary" href="{{ route('admin.attendance.index', ['month' => $nextMonth]) }}">Next →</a>
         </div>
     </div>
 
-    <div class="card border-0 shadow rounded-4 overflow-hidden">
+    <div class="card border-0 shadow-sm overflow-hidden mb-3">
+        <div class="card-header bg-white border-0 py-3 px-4">
+            <h2 class="h5 mb-0">{{ $monthLabel }}</h2>
+        </div>
         <div class="table-responsive">
-            <table class="table table-attendance table-hover align-middle mb-0">
-                <thead class="bg-body-secondary">
+            <table class="table table-bordered mb-0 text-center align-middle attendance-calendar">
+                <thead class="table-light">
                 <tr>
-                    <th class="ps-4">Staff</th>
-                    <th>Date</th>
-                    <th class="text-center">Check-in</th>
-                    <th class="text-center pe-4">Check-out</th>
+                    <th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th>
                 </tr>
                 </thead>
                 <tbody>
-                @forelse($attendances as $row)
-                    @php
-                        $name = $row->user?->name ?? 'Unknown';
-                        $initial = \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($name, 0, 1));
-                    @endphp
+                @foreach($weeks as $week)
                     <tr>
-                        <td class="ps-4 py-4 staff-cell">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="staff-avatar" aria-hidden="true">{{ $initial }}</div>
-                                <div>
-                                    <div class="staff-name">{{ $name }}</div>
-                                    @if($row->user?->email)
-                                        <div class="small text-muted text-truncate" style="max-width: 220px;">{{ $row->user->email }}</div>
-                                    @endif
-                                </div>
-                            </div>
-                        </td>
-                        <td class="py-4">
-                            <span class="date-pill">{{ $row->attendance_date?->toFormattedDateString() }}</span>
-                        </td>
-                        <td class="py-4 text-center">
-                            <x-attendance-time-photo
-                                :time="optional($row->checkin_time)?->format('H:i')"
-                                :photo-url="$row->checkinPhotoUrl()"
-                                variant="in"
-                                size="lg"
-                            />
-                        </td>
-                        <td class="py-4 text-center pe-4">
-                            <x-attendance-time-photo
-                                :time="optional($row->checkout_time)?->format('H:i')"
-                                :photo-url="$row->checkoutPhotoUrl()"
-                                variant="out"
-                                size="lg"
-                            />
-                        </td>
+                        @foreach($week as $cell)
+                            <td class="p-0 {{ $cell['inMonth'] ? '' : 'bg-light' }} {{ $cell['isToday'] ? 'today-cell' : '' }}"
+                                style="height: 110px; min-width: 110px; vertical-align: top;">
+                                @if($cell['inMonth'] && $cell['date'])
+                                    <a href="{{ route('admin.attendance.day', $cell['date']) }}"
+                                       class="d-block h-100 text-decoration-none text-dark p-2 calendar-day-link">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <span class="fw-semibold {{ $cell['isToday'] ? 'text-primary' : '' }}">{{ $cell['day'] }}</span>
+                                            @if($cell['isToday'])
+                                                <span class="badge text-bg-primary" style="font-size: 0.6rem;">Today</span>
+                                            @endif
+                                        </div>
+                                        @if($cell['isFuture'])
+                                            <div class="small text-muted mt-3">—</div>
+                                        @else
+                                            <div class="mt-2 small">
+                                                <div class="text-success fw-semibold">Attend {{ $cell['present'] }}</div>
+                                                <div class="text-danger">Unattend {{ $cell['absent'] }}</div>
+                                            </div>
+                                        @endif
+                                    </a>
+                                @endif
+                            </td>
+                        @endforeach
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="4" class="text-center text-muted py-5">
-                            <div class="py-3">
-                                <div class="fs-4 mb-2 opacity-50">📋</div>
-                                <p class="mb-0 fw-medium">No attendance records for this filter.</p>
-                                <p class="small mb-0 mt-1">Try another date or clear the filter.</p>
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
+                @endforeach
                 </tbody>
             </table>
         </div>
-        @if($attendances->hasPages())
-            <div class="card-body border-top bg-light py-3">
-                {{ $attendances->links() }}
-            </div>
-        @endif
     </div>
+
+    <p class="small text-muted mb-0">
+        <span class="text-success fw-semibold">Attend</span> = checked in that day ·
+        <span class="text-danger fw-semibold">Unattend</span> = no check-in among teachers &amp; students.
+    </p>
 @endsection
+
+@push('styles')
+<style>
+    .attendance-calendar .calendar-day-link:hover {
+        background: rgba(13, 110, 253, 0.06);
+    }
+    .attendance-calendar .today-cell {
+        box-shadow: inset 0 0 0 2px rgba(13, 110, 253, 0.45);
+    }
+</style>
+@endpush

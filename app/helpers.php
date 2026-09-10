@@ -24,24 +24,24 @@ if (! function_exists('face_euclidean_distance')) {
     }
 }
 
-if (! function_exists('face_find_matching_staff')) {
+if (! function_exists('face_find_matching_person')) {
     /**
-     * Find staff user whose stored descriptor is within threshold of the scanned descriptor.
+     * Find teacher or student whose stored descriptor is within threshold.
      *
      * @param  array<int, float>  $incomingDescriptor
      * @return array{user: User|null, distance: float|null}
      */
-    function face_find_matching_staff(array $incomingDescriptor, float $threshold = 0.5): array
+    function face_find_matching_person(array $incomingDescriptor, float $threshold = 0.5): array
     {
         $bestUser = null;
         $bestDistance = null;
 
-        $staff = User::query()
-            ->where('role', 'staff')
+        $people = User::query()
+            ->whereIn('role', ['teacher', 'student'])
             ->whereNotNull('face_descriptor')
-            ->get(['id', 'name', 'face_descriptor']);
+            ->get(['id', 'name', 'role', 'face_descriptor']);
 
-        foreach ($staff as $user) {
+        foreach ($people as $user) {
             $stored = $user->face_descriptor;
             if (! is_array($stored) || $stored === []) {
                 continue;
@@ -55,5 +55,34 @@ if (! function_exists('face_find_matching_staff')) {
         }
 
         return ['user' => $bestUser, 'distance' => $bestDistance];
+    }
+}
+
+if (! function_exists('face_find_matching_staff')) {
+    /**
+     * @deprecated Use face_find_matching_person()
+     *
+     * @param  array<int, float>  $incomingDescriptor
+     * @return array{user: User|null, distance: float|null}
+     */
+    function face_find_matching_staff(array $incomingDescriptor, float $threshold = 0.5): array
+    {
+        return face_find_matching_person($incomingDescriptor, $threshold);
+    }
+}
+
+if (! function_exists('format_money')) {
+    /**
+     * Format integer minor/major units for display (JPY whole yen by default).
+     */
+    function format_money(int $amount, string $currency = 'JPY'): string
+    {
+        $currency = strtoupper($currency);
+
+        if ($currency === 'JPY') {
+            return '¥'.number_format($amount);
+        }
+
+        return $currency.' '.number_format($amount / 100, 2);
     }
 }

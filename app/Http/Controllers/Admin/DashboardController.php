@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
+use App\Models\KioskDevice;
 use App\Models\User;
 use Illuminate\View\View;
 
@@ -13,13 +14,22 @@ class DashboardController extends Controller
     {
         $today = now()->toDateString();
 
-        $totalStaff = User::query()->where('role', 'staff')->count();
+        $totalTeachers = User::query()->where('role', 'teacher')->count();
+        $totalStudents = User::query()->where('role', 'student')->count();
+        $totalGuardians = User::query()->where('role', 'guardian')->count();
+        $activeDevices = KioskDevice::query()->whereNull('revoked_at')->count();
 
-        $todayPresent = User::query()
-            ->where('role', 'staff')
+        $todayPresentTeachers = User::query()
+            ->where('role', 'teacher')
             ->whereHas('attendances', function ($query) use ($today) {
-                $query->whereDate('attendance_date', $today)
-                    ->whereNotNull('checkin_time');
+                $query->whereDate('attendance_date', $today)->whereNotNull('checkin_time');
+            })
+            ->count();
+
+        $todayPresentStudents = User::query()
+            ->where('role', 'student')
+            ->whereHas('attendances', function ($query) use ($today) {
+                $query->whereDate('attendance_date', $today)->whereNotNull('checkin_time');
             })
             ->count();
 
@@ -33,19 +43,18 @@ class DashboardController extends Controller
             ->whereNotNull('checkout_time')
             ->count();
 
-        $recentAttendances = Attendance::query()
-            ->with('user:id,name')
-            ->orderByDesc('attendance_date')
-            ->orderByDesc('checkin_time')
-            ->limit(15)
-            ->get();
+        $todayPresent = $todayPresentTeachers + $todayPresentStudents;
 
         return view('admin.dashboard', compact(
-            'totalStaff',
+            'totalTeachers',
+            'totalStudents',
+            'totalGuardians',
+            'activeDevices',
             'todayPresent',
+            'todayPresentTeachers',
+            'todayPresentStudents',
             'checkinsToday',
             'checkoutsToday',
-            'recentAttendances',
             'today'
         ));
     }
