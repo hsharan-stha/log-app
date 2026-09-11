@@ -18,6 +18,23 @@
         <a href="{{ route('admin.staff.bulk-create') }}" class="btn btn-outline-primary">Bulk add</a>
     </div>
 
+    <form method="GET" action="{{ route('admin.staff.index') }}" class="mb-3 d-flex flex-wrap align-items-end gap-2">
+        <div>
+            <label class="form-label mb-1" for="name">Name</label>
+            <input id="name" name="name" type="search" class="form-control" style="min-width: 200px;"
+                   value="{{ $name }}" placeholder="Search by name">
+        </div>
+        <div>
+            <label class="form-label mb-1" for="email">Email</label>
+            <input id="email" name="email" type="search" class="form-control" style="min-width: 220px;"
+                   value="{{ $email }}" placeholder="Search by email">
+        </div>
+        <button class="btn btn-primary" type="submit">Filter</button>
+        @if($name !== '' || $email !== '')
+            <a href="{{ route('admin.staff.index') }}" class="btn btn-outline-secondary">Clear</a>
+        @endif
+    </form>
+
     <div class="card border-0 shadow-sm">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -56,7 +73,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="text-center text-muted py-4">No staff yet. Create the first record.</td>
+                        <td colspan="4" class="text-center text-muted py-4">No teachers found for this filter.</td>
                     </tr>
                 @endforelse
                 </tbody>

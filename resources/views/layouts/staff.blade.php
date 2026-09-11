@@ -17,6 +17,7 @@
         </div>
         <div class="d-flex flex-wrap align-items-center gap-2">
             <a class="btn btn-sm btn-outline-secondary" href="{{ route('attendance.scan') }}">Attendance kiosk</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ route('password.edit') }}">Change password</a>
             <form method="POST" action="{{ route('logout') }}" class="d-inline">
                 @csrf
                 <button class="btn btn-sm btn-outline-dark" type="submit">Logout</button>

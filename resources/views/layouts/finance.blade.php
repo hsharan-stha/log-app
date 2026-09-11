@@ -30,11 +30,14 @@
                     <li class="nav-item"><a class="nav-link" href="{{ route('admin.dashboard') }}">Admin</a></li>
                 @endif
             </ul>
-            <form method="POST" action="{{ route('logout') }}" class="d-flex align-items-center gap-3">
-                @csrf
+            <div class="d-flex align-items-center gap-2 gap-md-3">
                 <span class="text-white-50 small d-none d-md-inline">{{ auth()->user()?->name }}</span>
-                <button class="btn btn-sm btn-outline-light" type="submit">Logout</button>
-            </form>
+                <a class="btn btn-sm btn-outline-light {{ request()->routeIs('password.*') ? 'active' : '' }}" href="{{ route('password.edit') }}">Password</a>
+                <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                    @csrf
+                    <button class="btn btn-sm btn-outline-light" type="submit">Logout</button>
+                </form>
+            </div>
         </div>
     </div>
 </nav>

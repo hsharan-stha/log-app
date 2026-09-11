@@ -405,6 +405,10 @@
                             <div class="admin-shell__user-role">{{ $adminUser?->roleLabel() ?? '' }}</div>
                         </div>
                     </div>
+                    <a href="{{ route('password.edit') }}" class="admin-nav-link {{ request()->routeIs('password.*') ? 'is-active' : '' }}" style="margin-bottom:0.55rem;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+                        Change password
+                    </a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button class="admin-shell__logout" type="submit">Sign out</button>

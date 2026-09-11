@@ -11,20 +11,31 @@ use App\Models\User;
 use App\Support\BulkStaffParser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class StaffController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $name = trim($request->string('name')->toString());
+        $email = trim($request->string('email')->toString());
+
         $staff = User::query()
             ->where('role', 'teacher')
+            ->when($name !== '', fn ($query) => $query->where('name', 'like', '%'.$name.'%'))
+            ->when($email !== '', fn ($query) => $query->where('email', 'like', '%'.$email.'%'))
             ->orderBy('name')
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
-        return view('admin.staff.index', compact('staff'));
+        return view('admin.staff.index', [
+            'staff' => $staff,
+            'name' => $name,
+            'email' => $email,
+        ]);
     }
 
     public function create(): View

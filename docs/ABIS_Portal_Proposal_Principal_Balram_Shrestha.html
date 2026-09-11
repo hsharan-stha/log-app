@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ABIS School Portal — Proposal for Principal Balram Shrestha</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap');
+
+    :root {
+      --ink: #1a2332;
+      --muted: #5a6577;
+      --line: #d8dee8;
+      --accent: #0b4f6c;
+      --accent-soft: #e8f2f6;
+      --paper: #fafbfc;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #e6e9ef;
+      color: var(--ink);
+      font-family: "Source Sans 3", "Noto Sans JP", sans-serif;
+      line-height: 1.45;
+      font-size: 10.5pt;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 12mm auto;
+      background: #fff;
+      padding: 14mm 16mm 12mm;
+      box-shadow: 0 8px 28px rgba(26, 35, 50, 0.12);
+      position: relative;
+      page-break-after: always;
+    }
+
+    .page:last-child { page-break-after: auto; }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2.5px solid var(--accent);
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+    }
+
+    .brand {
+      font-size: 18pt;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+    }
+
+    .brand span {
+      display: block;
+      font-size: 9pt;
+      font-weight: 500;
+      color: var(--muted);
+      margin-top: 2px;
+      letter-spacing: 0.04em;
+    }
+
+    .meta {
+      text-align: right;
+      font-size: 9pt;
+      color: var(--muted);
+    }
+
+    .meta strong {
+      display: block;
+      color: var(--ink);
+      font-size: 10.5pt;
+      margin-bottom: 2px;
+    }
+
+    h1 {
+      font-size: 14pt;
+      font-weight: 700;
+      margin: 0 0 4px;
+      color: var(--ink);
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 10pt;
+      margin-bottom: 12px;
+    }
+
+    .to-block {
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      padding: 8px 12px;
+      margin-bottom: 12px;
+      font-size: 10pt;
+    }
+
+    .to-block strong { color: var(--accent); }
+
+    h2 {
+      font-size: 10.5pt;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 11px 0 5px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 3px;
+    }
+
+    p { margin-bottom: 6px; }
+
+    ul {
+      margin: 0 0 6px 16px;
+      padding: 0;
+    }
+
+    li { margin-bottom: 3px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 14px;
+      margin-bottom: 4px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 8px 10px;
+      background: var(--paper);
+    }
+
+    .card h3 {
+      font-size: 10pt;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 3px;
+    }
+
+    .card p, .card li {
+      font-size: 9.5pt;
+      color: var(--ink);
+      margin-bottom: 2px;
+    }
+
+    .card ul { margin-left: 14px; }
+
+    .benefits {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .benefit {
+      text-align: center;
+      padding: 8px 6px;
+      border-top: 2px solid var(--accent);
+      background: var(--paper);
+    }
+
+    .benefit strong {
+      display: block;
+      font-size: 9.5pt;
+      color: var(--accent);
+      margin-bottom: 2px;
+    }
+
+    .benefit span {
+      font-size: 9pt;
+      color: var(--muted);
+    }
+
+    .closing {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid var(--line);
+      font-size: 10pt;
+    }
+
+    footer {
+      position: absolute;
+      left: 16mm;
+      right: 16mm;
+      bottom: 10mm;
+      display: flex;
+      justify-content: space-between;
+      font-size: 8pt;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      padding-top: 6px;
+    }
+
+    .jp { font-family: "Noto Sans JP", "Source Sans 3", sans-serif; }
+
+    @media print {
+      body { background: #fff; }
+      .page {
+        margin: 0;
+        box-shadow: none;
+        width: auto;
+        min-height: auto;
+        height: 297mm;
+        padding: 12mm 14mm 14mm;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===================== ENGLISH ===================== -->
+  <section class="page">
+    <header>
+      <div class="brand">
+        ABIS School Portal
+        <span>Digital Operations Proposal</span>
+      </div>
+      <div class="meta">
+        <strong>Confidential Proposal</strong>
+        Date: 10 September 2026<br />
+        Document: One-page brief
+      </div>
+    </header>
+
+    <h1>Proposal: Integrated School Management &amp; Face Attendance System</h1>
+    <p class="subtitle">A secure, role-based digital portal for Asian Bridge International School (ABIS)</p>
+
+    <div class="to-block">
+      <strong>Prepared for:</strong> Principal Balram Shrestha, Asian Bridge International School (ABIS)<br />
+      <strong>Purpose:</strong> Seek approval to adopt a unified school portal for academics, attendance, billing, and parent communication.
+    </div>
+
+    <h2>1. Objective</h2>
+    <p>
+      To modernize daily school operations with one secure platform that connects the principal’s office,
+      teachers, finance, attendance staff, students, and guardians—reducing paperwork, improving accuracy,
+      and giving families timely information about their children.
+    </p>
+
+    <h2>2. Proposed Solution</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Administration &amp; Academics</h3>
+        <ul>
+          <li>Principal / Admin dashboard</li>
+          <li>Classes (Nursery–Grade 5+)</li>
+          <li>Courses, subjects &amp; lessons</li>
+          <li>Staff, teachers, students &amp; guardians</li>
+          <li>School notices by class or all</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Face Attendance Kiosk</h3>
+        <ul>
+          <li>School-tablet check-in / check-out</li>
+          <li>Device-locked for security</li>
+          <li>Student &amp; teacher face matching</li>
+          <li>Instant guardian alerts</li>
+          <li>Office attendance reports</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Finance &amp; Billing</h3>
+        <ul>
+          <li>Fee types &amp; student invoices</li>
+          <li>Record cash / bank / card payments</li>
+          <li>Partial &amp; paid status tracking</li>
+          <li>Guardian &amp; student invoice view</li>
+          <li>Billing summaries for the office</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Portals by Role</h3>
+        <ul>
+          <li>Principal / Admin / HR</li>
+          <li>Finance &amp; Attendance Operator</li>
+          <li>Teachers &amp; Office Staff</li>
+          <li>Students &amp; Guardians</li>
+          <li>Secure login for every user</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2>3. Key Benefits for ABIS</h2>
+    <div class="benefits">
+      <div class="benefit">
+        <strong>Safer Campus</strong>
+        <span>Know who is present; notify parents at check-in/out</span>
+      </div>
+      <div class="benefit">
+        <strong>Less Paperwork</strong>
+        <span>Fees, notices &amp; records in one place</span>
+      </div>
+      <div class="benefit">
+        <strong>Clear Oversight</strong>
+        <span>Principal visibility across academics &amp; office</span>
+      </div>
+    </div>
+
+    <h2>4. Implementation Outline</h2>
+    <ul>
+      <li><strong>Phase 1:</strong> Staff accounts, classes, and core admin setup</li>
+      <li><strong>Phase 2:</strong> Face attendance kiosk on school tablets (secure device registration)</li>
+      <li><strong>Phase 3:</strong> Finance invoices &amp; guardian / student access</li>
+      <li><strong>Phase 4:</strong> Training for office, teachers, and attendance staff; go-live support</li>
+    </ul>
+
+    <h2>5. Request for Approval</h2>
+    <p class="closing">
+      We respectfully request Principal Balram Shrestha’s approval to proceed with the ABIS School Portal
+      as the school’s official digital operations system. Upon approval, we will finalize the go-live schedule,
+      train key staff, and configure the attendance kiosk for campus use.
+    </p>
+    <p style="margin-top:10px;">
+      <strong>Prepared respectfully for your kind consideration.</strong><br />
+      Signature / Stamp: ________________________ &nbsp;&nbsp; Date: ______________
+    </p>
+
+    <footer>
+      <span>ABIS School Portal — Proposal (English)</span>
+      <span>Page 1 of 2 · For Principal Balram Shrestha</span>
+    </footer>
+  </section>
+
+  <!-- ===================== JAPANESE ===================== -->
+  <section class="page jp">
+    <header>
+      <div class="brand">
+        ABIS スクールポータル
+        <span>デジタル運用ご提案書</span>
+      </div>
+      <div class="meta">
+        <strong>機密提案書</strong>
+        日付：2026年9月10日<br />
+        文書：1ページ概要
+      </div>
+    </header>
+
+    <h1>ご提案：統合型 学校管理・顔認証出欠システム</h1>
+    <p class="subtitle">Asian Bridge International School（ABIS）向け 役割別セキュア・ポータル</p>
+
+    <div class="to-block">
+      <strong>宛先：</strong> Asian Bridge International School（ABIS）校長 Balram Shrestha 様<br />
+      <strong>目的：</strong> 教務・出欠・会計・保護者連絡を統合した学校ポータル導入のご承認をお願いするものです。
+    </div>
+
+    <h2>1. 目的</h2>
+    <p>
+      校長室・教員・会計・出欠担当・生徒・保護者をつなぐ安全な一つのプラットフォームにより、
+      日常業務をデジタル化し、書類作業の削減、記録の正確性向上、そしてご家庭への迅速な情報提供を実現します。
+    </p>
+
+    <h2>2. ご提案内容</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>管理・教務</h3>
+        <ul>
+          <li>校長／管理者ダッシュボード</li>
+          <li>クラス管理（Nursery〜Grade 5等）</li>
+          <li>教科・コース・レッスン</li>
+          <li>職員・教員・生徒・保護者管理</li>
+          <li>全体／クラス別お知らせ</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>顔認証出欠キオスク</h3>
+        <ul>
+          <li>校内タブレットで入退室記録</li>
+          <li>端末ロックによる安全運用</li>
+          <li>生徒・教員の顔認証照合</li>
+          <li>保護者への即時通知</li>
+          <li>事務向け出欠レポート</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>会計・請求</h3>
+        <ul>
+          <li>費用区分と生徒請求書</li>
+          <li>現金／振込／カード等の入金記録</li>
+          <li>一部入金・完済ステータス</li>
+          <li>保護者・生徒による請求確認</li>
+          <li>事務向け請求サマリー</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>役割別ポータル</h3>
+        <ul>
+          <li>校長／管理者／人事</li>
+          <li>会計・出欠オペレーター</li>
+          <li>教員・事務スタッフ</li>
+          <li>生徒・保護者</li>
+          <li>ユーザーごとの安全なログイン</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2>3. ABIS への主なメリット</h2>
+    <div class="benefits">
+      <div class="benefit">
+        <strong>安心・安全</strong>
+        <span>在校状況を把握し、入退室時に保護者へ通知</span>
+      </div>
+      <div class="benefit">
+        <strong>業務効率化</strong>
+        <span>学費・お知らせ・記録を一元管理</span>
+      </div>
+      <div class="benefit">
+        <strong>見える化</strong>
+        <span>校長として教務・事務を横断把握</span>
+      </div>
+    </div>
+
+    <h2>4. 導入の進め方</h2>
+    <ul>
+      <li><strong>第1段階：</strong> 職員アカウント・クラス・基本管理の設定</li>
+      <li><strong>第2段階：</strong> 校内タブレットへの顔認証出欠キオスク導入（端末登録）</li>
+      <li><strong>第3段階：</strong> 請求書機能および保護者・生徒ポータルの開放</li>
+      <li><strong>第4段階：</strong> 事務・教員・出欠担当への研修と本番稼働サポート</li>
+    </ul>
+
+    <h2>5. ご承認のお願い</h2>
+    <p class="closing">
+      本提案書をもちまして、ABIS スクールポータルを本校の公式デジタル運用システムとして導入することにつき、
+      Balram Shrestha 校長のご承認を賜りたく、謹んでお願い申し上げます。
+      ご承認後、稼働スケジュールの確定、主要スタッフへの研修、および校内出欠キオスクの設定を進めます。
+    </p>
+    <p style="margin-top:10px;">
+      <strong>何卒ご高配を賜りますよう、お願い申し上げます。</strong><br />
+      ご署名／ご捺印：________________________ &nbsp;&nbsp; 日付：______________
+    </p>
+
+    <footer>
+      <span>ABIS スクールポータル — ご提案書（日本語）</span>
+      <span>2 / 2 ページ · Balram Shrestha 校長 宛</span>
+    </footer>
+  </section>
+
+</body>
+</html>

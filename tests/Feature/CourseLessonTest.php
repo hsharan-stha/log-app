@@ -32,7 +32,7 @@ class CourseLessonTest extends TestCase
 
         $this->actingAs($admin)->post(route('admin.courses.store'), [
             'class_id' => $class->id,
-            'subject_id' => $subject->id,
+            'subject_ids' => [$subject->id],
             'teacher_id' => $teacher->id,
             'academic_year' => '2026/2027',
         ])->assertRedirect(route('admin.courses.index'));
@@ -63,6 +63,93 @@ class CourseLessonTest extends TestCase
             ->get(route('student.lessons.show', [$course, $lesson]))
             ->assertOk()
             ->assertSee('Letter A');
+    }
+
+    public function test_admin_can_filter_courses_by_class_subject_teacher_and_year(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $teacherA = User::factory()->create(['role' => 'teacher', 'name' => 'Teacher A']);
+        $teacherB = User::factory()->create(['role' => 'teacher', 'name' => 'Teacher B']);
+        $ukg = SchoolClass::query()->create(['name' => 'UKG', 'code' => 'ukg', 'sort_order' => 1]);
+        $g1 = SchoolClass::query()->create(['name' => 'Grade 1', 'code' => 'g1', 'sort_order' => 2]);
+        $english = Subject::query()->create(['name' => 'English', 'code' => 'english', 'sort_order' => 1]);
+        $math = Subject::query()->create(['name' => 'Math', 'code' => 'math', 'sort_order' => 2]);
+
+        $match = Course::query()->create([
+            'class_id' => $ukg->id,
+            'subject_id' => $english->id,
+            'teacher_id' => $teacherA->id,
+            'academic_year' => '2026/2027',
+            'is_active' => true,
+        ]);
+        Course::query()->create([
+            'class_id' => $g1->id,
+            'subject_id' => $english->id,
+            'teacher_id' => $teacherA->id,
+            'academic_year' => '2026/2027',
+            'is_active' => true,
+        ]);
+        Course::query()->create([
+            'class_id' => $ukg->id,
+            'subject_id' => $math->id,
+            'teacher_id' => $teacherA->id,
+            'academic_year' => '2026/2027',
+            'is_active' => true,
+        ]);
+        Course::query()->create([
+            'class_id' => $ukg->id,
+            'subject_id' => $english->id,
+            'teacher_id' => $teacherB->id,
+            'academic_year' => '2025/2026',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.courses.index', [
+                'class_id' => $ukg->id,
+                'subject_id' => $english->id,
+                'teacher_id' => $teacherA->id,
+                'academic_year' => '2026/2027',
+            ]))
+            ->assertOk();
+
+        $response->assertSee('UKG', false);
+        $response->assertSee('English', false);
+        $response->assertSee('Teacher A', false);
+        $response->assertSee('2026/2027', false);
+
+        // Table should contain only the matching course row (filters stay in the form dropdowns).
+        $this->assertSame(1, substr_count($response->getContent(), 'btn-outline-secondary">Edit</a>'));
+    }
+
+    public function test_admin_can_assign_multiple_subjects_to_a_class(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $teacher = User::factory()->create(['role' => 'teacher']);
+        $class = SchoolClass::query()->create(['name' => 'UKG', 'code' => 'ukg', 'sort_order' => 1]);
+        $english = Subject::query()->create(['name' => 'English', 'code' => 'english', 'sort_order' => 1]);
+        $math = Subject::query()->create(['name' => 'Math', 'code' => 'math', 'sort_order' => 2]);
+
+        $this->actingAs($admin)->post(route('admin.courses.store'), [
+            'class_id' => $class->id,
+            'subject_ids' => [$english->id, $math->id],
+            'teacher_id' => $teacher->id,
+            'academic_year' => '2026/2027',
+        ])
+            ->assertRedirect(route('admin.courses.index'))
+            ->assertSessionHas('success', '2 courses assigned.');
+
+        $this->assertDatabaseCount('courses', 2);
+        $this->assertDatabaseHas('courses', [
+            'class_id' => $class->id,
+            'subject_id' => $english->id,
+            'teacher_id' => $teacher->id,
+        ]);
+        $this->assertDatabaseHas('courses', [
+            'class_id' => $class->id,
+            'subject_id' => $math->id,
+            'teacher_id' => $teacher->id,
+        ]);
     }
 
     public function test_teacher_cannot_edit_another_teachers_course(): void

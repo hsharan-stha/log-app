@@ -10,6 +10,35 @@ class BulkStaffTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_admin_can_filter_staff_by_name_and_email(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        User::factory()->create([
+            'role' => 'teacher',
+            'name' => 'Alice Teacher',
+            'email' => 'alice@school.test',
+        ]);
+        User::factory()->create([
+            'role' => 'teacher',
+            'name' => 'Bob Teacher',
+            'email' => 'bob@school.test',
+        ]);
+
+        $byName = $this->actingAs($admin)
+            ->get(route('admin.staff.index', ['name' => 'Alice']))
+            ->assertOk()
+            ->assertSee('Alice Teacher')
+            ->assertSee('alice@school.test')
+            ->assertDontSee('Bob Teacher');
+
+        $this->actingAs($admin)
+            ->get(route('admin.staff.index', ['email' => 'bob@school']))
+            ->assertOk()
+            ->assertSee('Bob Teacher')
+            ->assertSee('bob@school.test')
+            ->assertDontSee('Alice Teacher');
+    }
+
     public function test_admin_can_bulk_create_staff_with_default_password(): void
     {
         $admin = User::factory()->create([
