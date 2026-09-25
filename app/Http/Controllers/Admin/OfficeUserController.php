@@ -17,15 +17,32 @@ class OfficeUserController extends Controller
     /** @var list<string> */
     public const ROLES = ['hr', 'finance', 'staff', 'other', 'attendance'];
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $name = trim($request->string('name')->toString());
+        $email = trim($request->string('email')->toString());
+        $role = $request->string('role')->toString();
+        if (! in_array($role, self::ROLES, true)) {
+            $role = '';
+        }
+
         $users = User::query()
             ->whereIn('role', self::ROLES)
+            ->when($name !== '', fn ($query) => $query->where('name', 'like', '%'.$name.'%'))
+            ->when($email !== '', fn ($query) => $query->where('email', 'like', '%'.$email.'%'))
+            ->when($role !== '', fn ($query) => $query->where('role', $role))
             ->orderBy('role')
             ->orderBy('name')
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
-        return view('admin.office-users.index', compact('users'));
+        return view('admin.office-users.index', [
+            'users' => $users,
+            'name' => $name,
+            'email' => $email,
+            'role' => $role,
+            'roles' => self::ROLES,
+        ]);
     }
 
     public function create(): View
@@ -86,6 +103,16 @@ class OfficeUserController extends Controller
         $officeUser->save();
 
         return redirect()->route('admin.office-users.index')->with('success', 'Office user updated.');
+    }
+
+    public function destroy(User $officeUser): RedirectResponse
+    {
+        abort_unless(in_array($officeUser->role, self::ROLES, true), 404);
+        abort_if($officeUser->is(auth()->user()), 403);
+
+        $officeUser->delete();
+
+        return redirect()->route('admin.office-users.index')->with('success', 'Staff user deleted.');
     }
 
     public function registerFace(User $officeUser): View

@@ -1,16 +1,18 @@
 @extends('layouts.admin')
 
-@section('title', 'Edit staff')
+@section('title', 'Edit teacher')
 
 @section('content')
-    <div class="mb-4">
-        <a href="{{ route('admin.staff.index') }}" class="text-decoration-none small">← Back to staff</a>
-        <h1 class="h3 mt-2 mb-0">Edit {{ $staff->name }}</h1>
-        <p class="text-muted mb-0">New staff get the default password from config until you set one here. Staff may sign in to register their face at <strong>/my-face</strong> only (not the admin console).</p>
+    <a href="{{ route('admin.staff.index') }}" class="people-back">← Teachers</a>
+    <div class="people-head">
+        <div>
+            <h1>Edit {{ $staff->name }}</h1>
+            <p>Leave the password blank to keep the current one.</p>
+        </div>
     </div>
 
-    <div class="card border-0 shadow-sm" style="max-width: 640px;">
-        <div class="card-body p-4">
+    <div class="card people-form-card">
+        <div class="card-body">
             <form method="POST" action="{{ route('admin.staff.update', $staff) }}">
                 @csrf
                 @method('PUT')
@@ -21,21 +23,24 @@
                     @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="email">Email (optional)</label>
+                    <label class="form-label" for="email">Email</label>
                     <input id="email" name="email" type="email" class="form-control @error('email') is-invalid @enderror"
                            value="{{ old('email', $staff->email) }}">
                     @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="password">New password (optional)</label>
-                    <input id="password" name="password" type="password" class="form-control @error('password') is-invalid @enderror">
+                    <label class="form-label" for="password">New password</label>
+                    <input id="password" name="password" type="password" class="form-control @error('password') is-invalid @enderror" autocomplete="new-password">
                     @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="mb-3">
                     <label class="form-label" for="password_confirmation">Confirm password</label>
-                    <input id="password_confirmation" name="password_confirmation" type="password" class="form-control">
+                    <input id="password_confirmation" name="password_confirmation" type="password" class="form-control" autocomplete="new-password">
                 </div>
-                <button class="btn btn-primary" type="submit">Save changes</button>
+                <div class="people-form__footer">
+                    <button class="btn btn-primary" type="submit">Save changes</button>
+                    <a class="btn btn-outline-secondary" href="{{ route('admin.staff.index') }}">Cancel</a>
+                </div>
             </form>
         </div>
     </div>

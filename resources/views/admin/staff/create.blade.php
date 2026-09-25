@@ -1,20 +1,18 @@
 @extends('layouts.admin')
 
-@section('title', 'Add staff')
+@section('title', 'Add teacher')
 
 @section('content')
-    <div class="mb-4">
-        <a href="{{ route('admin.staff.index') }}" class="text-decoration-none small">← Back to staff</a>
-        <h1 class="h3 mt-2 mb-0">Add staff</h1>
-        <p class="text-muted mb-0">
-            A password is set automatically to your configured default
-            (<code>STAFF_DEFAULT_PASSWORD</code> → currently <strong class="text-body">{{ config('staff.default_password') }}</strong>).
-            Staff can sign in at <strong>/login</strong> to register their face at <strong>/my-face</strong>.
-        </p>
+    <a href="{{ route('admin.staff.index') }}" class="people-back">← Teachers</a>
+    <div class="people-head">
+        <div>
+            <h1>Add teacher</h1>
+            <p>The account uses the school default password until you change it.</p>
+        </div>
     </div>
 
-    <div class="card border-0 shadow-sm" style="max-width: 640px;">
-        <div class="card-body p-4">
+    <div class="card people-form-card">
+        <div class="card-body">
             <form method="POST" action="{{ route('admin.staff.store') }}">
                 @csrf
                 <div class="mb-3">
@@ -24,12 +22,17 @@
                     @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="email">Email (optional)</label>
+                    <label class="form-label" for="email">Email</label>
                     <input id="email" name="email" type="email" class="form-control @error('email') is-invalid @enderror"
                            value="{{ old('email') }}">
                     @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <div class="form-text">Optional. Needed if this teacher will sign in.</div>
                 </div>
-                <button class="btn btn-primary" type="submit">Save staff</button>
+                <p class="small text-muted">Default password: <strong class="text-body">{{ config('staff.default_password') }}</strong></p>
+                <div class="people-form__footer">
+                    <button class="btn btn-primary" type="submit">Save teacher</button>
+                    <a class="btn btn-outline-secondary" href="{{ route('admin.staff.index') }}">Cancel</a>
+                </div>
             </form>
         </div>
     </div>

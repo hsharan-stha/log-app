@@ -1,15 +1,25 @@
 @extends('layouts.admin')
 
-@section('title', 'Add office user')
+@section('title', 'Add staff user')
 
 @section('content')
-    <h1 class="h3 mb-4">Add office user</h1>
-    <div class="card border-0 shadow-sm" style="max-width: 520px;">
+    <a href="{{ route('admin.office-users.index') }}" class="people-back">← Staff users</a>
+    <div class="people-head">
+        <div>
+            <h1>Add staff user</h1>
+            <p>The account uses the school default password until you change it.</p>
+        </div>
+    </div>
+
+    <div class="card people-form-card">
         <div class="card-body">
             <form method="POST" action="{{ route('admin.office-users.store') }}">
                 @csrf
                 @include('admin.office-users._form')
-                <button class="btn btn-primary" type="submit">Create</button>
+                <div class="people-form__footer">
+                    <button class="btn btn-primary" type="submit">Save staff user</button>
+                    <a class="btn btn-outline-secondary" href="{{ route('admin.office-users.index') }}">Cancel</a>
+                </div>
             </form>
         </div>
     </div>

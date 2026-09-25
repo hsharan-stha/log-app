@@ -313,6 +313,117 @@
         }
         }
         .academic-step-card { border-radius: 1rem; }
+        .people-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.15rem;
+        }
+        .people-head h1 {
+            font-size: 1.45rem;
+            font-weight: 650;
+            letter-spacing: -0.02em;
+            margin: 0;
+        }
+        .people-head p { margin: 0.3rem 0 0; color: #64748b; font-size: 0.92rem; }
+        .people-head__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .people-filters,
+        .people-table-card,
+        .people-form-card {
+            border: 0;
+            border-radius: 0.9rem;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+            background: #fff;
+        }
+        .people-filters { margin-bottom: 1rem; }
+        .people-filters .card-body { padding: 0.95rem 1rem; }
+        .people-filters__grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.75rem;
+            align-items: end;
+        }
+        .people-filters .form-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 0.3rem;
+        }
+        .people-filters__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .people-table-card { overflow: hidden; }
+        .people-table { margin: 0; }
+        .people-table thead th {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #64748b;
+            font-weight: 600;
+            background: #f8fafc;
+            border-bottom-color: #e2e8f0;
+        }
+        .people-person { display: flex; align-items: center; gap: 0.7rem; min-width: 0; }
+        .people-person span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+        .people-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 999px;
+            display: grid;
+            place-items: center;
+            background: #e0f2fe;
+            color: #0369a1;
+            font-size: 0.78rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .people-actions { display: flex; justify-content: flex-end; gap: 0.35rem; flex-wrap: wrap; }
+        .people-back {
+            display: inline-block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #0369a1;
+            text-decoration: none;
+            margin-bottom: 0.55rem;
+        }
+        .people-back:hover { color: #075985; }
+        .people-form-card { max-width: 640px; }
+        .people-form-card .card-body { padding: 1.35rem 1.4rem 1.25rem; }
+        .people-form__footer { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        @media (max-width: 767.98px) {
+            .people-head__actions { width: 100%; }
+            .people-head__actions .btn { flex: 1 1 auto; }
+            .people-table thead { display: none; }
+            .people-table,
+            .people-table tbody,
+            .people-table tr,
+            .people-table td { display: block; width: 100%; }
+            .people-table tr {
+                padding: 0.9rem 1rem 1rem;
+                border-bottom: 1px solid #e2e8f0;
+            }
+            .people-table td {
+                border: 0;
+                padding: 0.35rem 0;
+            }
+            .people-table td[data-label]::before {
+                content: attr(data-label);
+                display: block;
+                margin-bottom: 0.15rem;
+                font-size: 0.68rem;
+                font-weight: 600;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+                color: #64748b;
+            }
+            .people-table td.people-actions-cell { padding-top: 0.7rem; }
+            .people-table td.people-actions-cell::before { display: none; }
+            .people-actions { justify-content: stretch; }
+            .people-actions .btn,
+            .people-actions form { flex: 1 1 0; }
+            .people-actions form .btn { width: 100%; }
+            .people-table td[colspan] { text-align: center; }
+        }
     </style>
     @stack('styles')
 </head>

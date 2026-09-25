@@ -7,7 +7,7 @@
         ['key' => 'courses', 'label' => '4. Courses', 'route' => 'admin.courses.index'],
     ];
 @endphp
-<div class="card border-0 shadow-sm mb-4">
+<div class="card border-0 shadow-sm mb-4 {{ !empty($hideFlowSteps) ? 'd-none' : '' }}">
     <div class="card-body py-3">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
             <div class="d-flex flex-wrap align-items-center gap-2 {{ !empty($hideFlowSteps) ? 'd-none' : '' }}">

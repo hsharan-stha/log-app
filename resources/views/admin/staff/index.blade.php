@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Staff')
+@section('title', 'Teachers')
 
 @section('content')
     @include('admin.partials.academics-flow', [
@@ -11,79 +11,87 @@
         'nextLabel' => 'Subjects',
         'hideFlowSteps' => true,
     ])
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+
+    <div class="people-head">
         <div>
-            <h1 class="h3 mb-0">Teachers</h1>
-            <p class="text-muted mb-0">Add teachers, register faces for the school kiosk.</p>
+            <h1>Teachers</h1>
+            <p>Add teachers and register faces for the school kiosk.</p>
         </div>
-        <a href="{{ route('admin.staff.bulk-create') }}" class="btn btn-outline-primary">Bulk add</a>
+        <div class="people-head__actions">
+            <a href="{{ route('admin.staff.bulk-create') }}" class="btn btn-outline-primary">Bulk add</a>
+            <a href="{{ route('admin.staff.create') }}" class="btn btn-primary">Add teacher</a>
+        </div>
     </div>
 
-    <form method="GET" action="{{ route('admin.staff.index') }}" class="mb-3 d-flex flex-wrap align-items-end gap-2">
-        <div>
-            <label class="form-label mb-1" for="name">Name</label>
-            <input id="name" name="name" type="search" class="form-control" style="min-width: 200px;"
-                   value="{{ $name }}" placeholder="Search by name">
+    <form method="GET" action="{{ route('admin.staff.index') }}" class="card people-filters">
+        <div class="card-body">
+            <div class="people-filters__grid">
+                <div>
+                    <label class="form-label" for="name">Name</label>
+                    <input id="name" name="name" type="search" class="form-control" value="{{ $name }}" placeholder="Search by name">
+                </div>
+                <div>
+                    <label class="form-label" for="email">Email</label>
+                    <input id="email" name="email" type="search" class="form-control" value="{{ $email }}" placeholder="Search by email">
+                </div>
+                <div class="people-filters__actions">
+                    <button class="btn btn-primary" type="submit">Search</button>
+                    @if($name !== '' || $email !== '')
+                        <a href="{{ route('admin.staff.index') }}" class="btn btn-outline-secondary">Clear</a>
+                    @endif
+                </div>
+            </div>
         </div>
-        <div>
-            <label class="form-label mb-1" for="email">Email</label>
-            <input id="email" name="email" type="search" class="form-control" style="min-width: 220px;"
-                   value="{{ $email }}" placeholder="Search by email">
-        </div>
-        <button class="btn btn-primary" type="submit">Filter</button>
-        @if($name !== '' || $email !== '')
-            <a href="{{ route('admin.staff.index') }}" class="btn btn-outline-secondary">Clear</a>
-        @endif
     </form>
 
-    <div class="card border-0 shadow-sm">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+    <div class="card people-table-card">
+        <table class="table table-hover align-middle people-table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Face</th>
+                <th class="text-end">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            @forelse($staff as $member)
                 <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Face</th>
-                    <th class="text-end">Actions</th>
+                    <td data-label="Name">
+                        <div class="people-person">
+                            <span class="people-avatar">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($member->name, 0, 1)) }}</span>
+                            <span class="fw-medium">{{ $member->name }}</span>
+                        </div>
+                    </td>
+                    <td data-label="Email">{{ $member->email ?? '—' }}</td>
+                    <td data-label="Face">
+                        @if($member->face_descriptor)
+                            <span class="badge text-bg-success">Registered</span>
+                        @else
+                            <span class="badge text-bg-warning text-dark">Not registered</span>
+                        @endif
+                    </td>
+                    <td class="people-actions-cell">
+                        <div class="people-actions">
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.staff.edit', $member) }}">Edit</a>
+                            <a class="btn btn-sm btn-outline-primary" href="{{ route('admin.staff.register-face', $member) }}">Face</a>
+                            <form action="{{ route('admin.staff.destroy', $member) }}" method="POST" onsubmit="return confirm('Delete this teacher?');">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                            </form>
+                        </div>
+                    </td>
                 </tr>
-                </thead>
-                <tbody>
-                @forelse($staff as $member)
-                    <tr>
-                        <td class="fw-medium">{{ $member->name }}</td>
-                        <td>{{ $member->email ?? '—' }}</td>
-                        <td>
-                            @if($member->face_descriptor)
-                                <span class="badge text-bg-success">Registered</span>
-                            @else
-                                <span class="badge text-bg-warning text-dark">Missing</span>
-                            @endif
-                        </td>
-                        <td class="text-end">
-                            <div class="btn-group btn-group-sm">
-                                <a class="btn btn-outline-secondary" href="{{ route('admin.staff.edit', $member) }}">Edit</a>
-                                <a class="btn btn-outline-primary" href="{{ route('admin.staff.register-face', $member) }}">Face</a>
-                                <form action="{{ route('admin.staff.destroy', $member) }}" method="POST" class="d-inline"
-                                      onsubmit="return confirm('Delete this staff member?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="btn btn-outline-danger" type="submit">Delete</button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="4" class="text-center text-muted py-4">No teachers found for this filter.</td>
-                    </tr>
-                @endforelse
-                </tbody>
-            </table>
-        </div>
+            @empty
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">No teachers found.</td>
+                </tr>
+            @endforelse
+            </tbody>
+        </table>
         @if($staff->hasPages())
-            <div class="card-body border-top">
-                {{ $staff->links() }}
-            </div>
+            <div class="card-body border-top">{{ $staff->links() }}</div>
         @endif
     </div>
 @endsection

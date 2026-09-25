@@ -99,7 +99,7 @@ Route::middleware(['auth', 'role:admin,hr'])->prefix('admin')->name('admin.')->g
     Route::get('office-users/{officeUser}/register-face', [OfficeUserController::class, 'registerFace'])->name('office-users.register-face');
     Route::post('office-users/{officeUser}/register-face', [OfficeUserController::class, 'storeFaceDescriptor'])->name('office-users.register-face.store');
     Route::resource('office-users', OfficeUserController::class)
-        ->except(['show', 'destroy'])
+        ->except(['show'])
         ->parameters(['office-users' => 'officeUser']);
 
     Route::get('/academics', [AcademicSetupController::class, 'index'])->name('academics.index');

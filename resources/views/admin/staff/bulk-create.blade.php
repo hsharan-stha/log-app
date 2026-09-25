@@ -3,17 +3,15 @@
 @section('title', 'Bulk add staff')
 
 @section('content')
-    <div class="mb-4">
-        <a href="{{ route('admin.staff.index') }}" class="text-decoration-none small">← Back to staff</a>
-        <h1 class="h3 mt-2 mb-0">Bulk add staff</h1>
-        <p class="text-muted mb-0">
-            One person per line: <code>Name</code> or <code>Name, email@example.com</code>.
-            Each account gets the default password from <code>STAFF_DEFAULT_PASSWORD</code> in <code>.env</code>
-            (currently <strong class="text-body">{{ config('staff.default_password') }}</strong>).
-        </p>
+    <a href="{{ route('admin.staff.index') }}" class="people-back">← Teachers</a>
+    <div class="people-head">
+        <div>
+            <h1>Bulk add teachers</h1>
+            <p>One person per line: <code>Name</code> or <code>Name, email@example.com</code>. Default password: <strong class="text-body">{{ config('staff.default_password') }}</strong>.</p>
+        </div>
     </div>
 
-    <div class="card border-0 shadow-sm" style="max-width: 720px;">
+    <div class="card people-form-card" style="max-width: 720px;">
         <div class="card-body p-4">
             <form method="POST" action="{{ route('admin.staff.bulk-create.store') }}">
                 @csrf
@@ -33,7 +31,7 @@
                               placeholder="Ada Lovelace, ada@example.com&#10;Alan Turing&#10;Grace Hopper, grace@example.com">{{ old('list') }}</textarea>
                     <div class="form-text">Up to 500 lines. Emails must be unique in the list and in the database.</div>
                 </div>
-                <div class="d-flex flex-wrap gap-2">
+                <div class="people-form__footer">
                     <button class="btn btn-primary" type="submit">Create all</button>
                     <a class="btn btn-outline-secondary" href="{{ route('admin.staff.index') }}">Cancel</a>
                 </div>
