@@ -5,8 +5,8 @@
 @section('content')
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
         <div>
-            <a href="{{ route('admin.attendance.index', ['month' => $month]) }}" class="small text-decoration-none">← Back to calendar</a>
-            <h1 class="h3 mt-2 mb-1">{{ $dateLabel }}</h1>
+            <a href="{{ route('admin.attendance.index', ['group' => $group, 'month' => $month]) }}" class="small text-decoration-none">← Back to {{ strtolower($groupLabel) }} calendar</a>
+            <h1 class="h3 mt-2 mb-1">{{ $groupLabel }} · {{ $dateLabel }}</h1>
             <p class="text-muted mb-0">
                 Attend <strong class="text-success">{{ $presentCount }}</strong>
                 · Unattend <strong class="text-danger">{{ $absentCount }}</strong>
@@ -15,11 +15,30 @@
         </div>
     </div>
 
+    <form method="GET" action="{{ route('admin.attendance.day', ['group' => $group, 'date' => $date]) }}" class="mb-4 d-flex flex-wrap align-items-end gap-2">
+        <div>
+            <label class="form-label mb-1" for="q">Search person</label>
+            <input id="q" name="q" type="search" class="form-control" style="min-width: 240px;"
+                   value="{{ $q }}" placeholder="Name or email" autofocus>
+        </div>
+        <button class="btn btn-primary" type="submit">Search</button>
+        @if($q !== '')
+            <a href="{{ route('admin.attendance.day', ['group' => $group, 'date' => $date]) }}" class="btn btn-outline-secondary">Clear</a>
+        @endif
+    </form>
+
     <div class="row g-4">
         <div class="col-lg-7">
             <div class="card border-0 shadow-sm overflow-hidden">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <strong class="text-success">Attended ({{ $presentCount }})</strong>
+                    <strong class="text-success">
+                        Attended
+                        @if($q !== '')
+                            ({{ $present->count() }} of {{ $presentCount }})
+                        @else
+                            ({{ $presentCount }})
+                        @endif
+                    </strong>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-attendance table-hover align-middle mb-0">
@@ -27,8 +46,14 @@
                         <tr>
                             <th class="ps-4">Person</th>
                             <th>Role</th>
-                            <th class="text-center">Check-in photo</th>
-                            <th class="text-center pe-4">Check-out photo</th>
+                            @if($group === 'students')
+                                <th class="text-center">Bus in</th>
+                            @endif
+                            <th class="text-center">School in</th>
+                            <th class="text-center pe-4">School out</th>
+                            @if($group === 'students')
+                                <th class="text-center pe-4">Bus out</th>
+                            @endif
                         </tr>
                         </thead>
                         <tbody>
@@ -38,6 +63,7 @@
                                 $att = $row['attendance'];
                                 $name = $user->name;
                                 $initial = \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($name, 0, 1));
+                                $showBus = $user->role === 'student' && $user->rides_bus;
                             @endphp
                             <tr>
                                 <td class="ps-4 py-3 staff-cell">
@@ -49,27 +75,66 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="text-capitalize">{{ $user->role }}</td>
+                                <td class="text-capitalize">
+                                    {{ $user->role }}
+                                    @if($showBus)
+                                        <span class="badge text-bg-info">Bus</span>
+                                    @endif
+                                </td>
+                                @if($group === 'students')
+                                <td class="text-center py-3">
+                                    @if($showBus)
+                                        <x-attendance-time-photo
+                                            :time="optional($att->bus_checkin_time)?->format('H:i')"
+                                            :photo-url="$att->busCheckinPhotoUrl()"
+                                            variant="in"
+                                            size="sm"
+                                        />
+                                    @else
+                                        <span class="text-muted">—</span>
+                                    @endif
+                                </td>
+                                @endif
                                 <td class="text-center py-3">
                                     <x-attendance-time-photo
                                         :time="optional($att->checkin_time)?->format('H:i')"
                                         :photo-url="$att->checkinPhotoUrl()"
                                         variant="in"
-                                        size="lg"
+                                        size="sm"
                                     />
                                 </td>
-                                <td class="text-center pe-4 py-3">
+                                <td class="text-center py-3">
                                     <x-attendance-time-photo
                                         :time="optional($att->checkout_time)?->format('H:i')"
                                         :photo-url="$att->checkoutPhotoUrl()"
                                         variant="out"
-                                        size="lg"
+                                        size="sm"
                                     />
                                 </td>
+                                @if($group === 'students')
+                                <td class="text-center pe-4 py-3">
+                                    @if($showBus)
+                                        <x-attendance-time-photo
+                                            :time="optional($att->bus_checkout_time)?->format('H:i')"
+                                            :photo-url="$att->busCheckoutPhotoUrl()"
+                                            variant="out"
+                                            size="sm"
+                                        />
+                                    @else
+                                        <span class="text-muted">—</span>
+                                    @endif
+                                </td>
+                                @endif
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-5">Nobody checked in this day.</td>
+                                <td colspan="{{ $group === 'students' ? 6 : 4 }}" class="text-center text-muted py-5">
+                                    @if($q !== '')
+                                        No attended people match “{{ $q }}”.
+                                    @else
+                                        Nobody checked in this day.
+                                    @endif
+                                </td>
                             </tr>
                         @endforelse
                         </tbody>
@@ -81,7 +146,14 @@
         <div class="col-lg-5">
             <div class="card border-0 shadow-sm overflow-hidden">
                 <div class="card-header bg-white">
-                    <strong class="text-danger">Unattended ({{ $absentCount }})</strong>
+                    <strong class="text-danger">
+                        Unattended
+                        @if($q !== '')
+                            ({{ $absent->count() }} of {{ $absentCount }})
+                        @else
+                            ({{ $absentCount }})
+                        @endif
+                    </strong>
                 </div>
                 <ul class="list-group list-group-flush">
                     @forelse($absent as $user)
@@ -93,7 +165,13 @@
                             <span class="badge text-bg-light text-capitalize border">{{ $user->role }}</span>
                         </li>
                     @empty
-                        <li class="list-group-item text-muted text-center py-4">Everyone attended.</li>
+                        <li class="list-group-item text-muted text-center py-4">
+                            @if($q !== '')
+                                No unattended people match “{{ $q }}”.
+                            @else
+                                Everyone attended.
+                            @endif
+                        </li>
                     @endforelse
                 </ul>
             </div>

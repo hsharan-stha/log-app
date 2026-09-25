@@ -31,7 +31,7 @@ class DashboardController extends Controller
             ->get()
             ->filter(fn (Notice $n) => $n->isVisibleTo($user));
 
-        $alerts = $user->notifications()->latest()->limit(15)->get();
+        $alerts = $user->notifications()->latest()->paginate(15, ['*'], 'alerts');
 
         return view('guardian.dashboard', compact('user', 'wards', 'todayByStudent', 'notices', 'alerts'));
     }

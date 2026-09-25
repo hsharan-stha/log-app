@@ -66,8 +66,10 @@
                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('attendance.home') ? 'active' : '' }}" href="{{ route('attendance.home') }}">Home</a></li>
                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('attendance.setup*') ? 'active' : '' }}" href="{{ route('attendance.setup') }}">Setup kiosk</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('attendance.scan') }}">Face attendance</a></li>
+                    <li class="nav-item d-none"><a class="nav-link {{ request()->routeIs('office.face') ? 'active' : '' }}" href="{{ route('office.face') }}">My face</a></li>
                 @elseif(in_array($role, ['staff', 'other'], true))
                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('office.dashboard') ? 'active' : '' }}" href="{{ route('office.dashboard') }}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('office.face') ? 'active' : '' }}" href="{{ route('office.face') }}">My face</a></li>
                 @endif
                 @if($role !== 'attendance')
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('messages.*') ? 'active' : '' }}" href="{{ route('messages.index') }}">Messages</a></li>

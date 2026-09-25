@@ -1,10 +1,10 @@
 @extends('layouts.admin')
 
-@section('title', ($staff->isTeacher() ? 'Teacher' : 'Student').' monthly attendance')
+@section('title', ($staff->isStudent() ? 'Student' : ($staff->isOfficeStaff() ? 'Staff' : 'Teacher')).' monthly attendance')
 
 @section('content')
     @include('admin.partials.reports-flow', [
-        'current' => $staff->isTeacher() ? 'teachers' : 'students',
+        'current' => $staff->isStudent() ? 'students' : 'teachers',
     ])
 
     <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
@@ -18,7 +18,7 @@
             </p>
         </div>
         <div class="d-flex flex-wrap gap-2">
-            <a class="btn btn-outline-secondary rounded-3" href="{{ route('admin.reports.attendance', ['month' => $month, 'role' => $staff->isTeacher() ? 'teacher' : 'student']) }}">← Back to report</a>
+            <a class="btn btn-outline-secondary rounded-3" href="{{ $staff->isStudent() ? route('admin.reports.attendance.students', ['month' => $month]) : route('admin.reports.attendance.teachers', ['month' => $month]) }}">← Back to report</a>
         </div>
     </div>
 

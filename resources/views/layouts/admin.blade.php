@@ -296,6 +296,28 @@
                 </div>
 
                 <nav class="admin-shell__sidebar-nav" aria-label="Admin">
+                    <a class="admin-nav-link {{ request()->routeIs('admin.staff.*') ? 'is-active' : '' }}"
+                       href="{{ route('admin.staff.index') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1"/><circle cx="9.5" cy="7.5" r="3"/><path d="M20 19v-1a3.5 3.5 0 0 0-2.5-3.35"/><path d="M16.5 4.7a3 3 0 0 1 0 5.6"/></svg>
+                        Teachers
+                    </a>
+                    <a class="admin-nav-link {{ request()->routeIs('admin.office-users.*') ? 'is-active' : '' }}"
+                       href="{{ route('admin.office-users.index') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1"/><circle cx="9.5" cy="7.5" r="3"/><path d="M20 19v-1a3.5 3.5 0 0 0-2.5-3.35"/><path d="M16.5 4.7a3 3 0 0 1 0 5.6"/></svg>
+                        Staff users
+                    </a>
+                    <a class="admin-nav-link {{ request()->routeIs('admin.attendance.*') && request()->route('group') === 'staff' ? 'is-active' : '' }}"
+                       href="{{ route('admin.attendance.index', 'staff') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M8 3.5V7M16 3.5V7M3.5 10h17"/></svg>
+                        Staff calendar
+                    </a>
+                    <a class="admin-nav-link {{ request()->routeIs('admin.devices.*') ? 'is-active' : '' }}"
+                       href="{{ route('admin.devices.index') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M11 17h2"/></svg>
+                        Kiosk devices
+                    </a>
+
+                    <div class="d-none" aria-hidden="true">
                     @if($isAdmin)
                     <a class="admin-nav-link {{ request()->routeIs('admin.dashboard') ? 'is-active' : '' }}"
                        href="{{ route('admin.dashboard') }}">
@@ -314,11 +336,6 @@
                        href="{{ route('admin.classes.index') }}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5h16v14H4Z"/><path d="M8 9h8M8 13h5"/></svg>
                         Classes
-                    </a>
-                    <a class="admin-nav-link {{ request()->routeIs('admin.staff.*') ? 'is-active' : '' }}"
-                       href="{{ route('admin.staff.index') }}">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1"/><circle cx="9.5" cy="7.5" r="3"/><path d="M20 19v-1a3.5 3.5 0 0 0-2.5-3.35"/><path d="M16.5 4.7a3 3 0 0 1 0 5.6"/></svg>
-                        Teachers
                     </a>
                     <a class="admin-nav-link {{ request()->routeIs('admin.subjects.*') ? 'is-active' : '' }}"
                        href="{{ route('admin.subjects.index') }}">
@@ -350,10 +367,10 @@
 
                     @if($isAdmin)
                     <div class="admin-nav-group">Attendance</div>
-                    <a class="admin-nav-link {{ request()->routeIs('admin.attendance.*') ? 'is-active' : '' }}"
-                       href="{{ route('admin.attendance.index') }}">
+                    <a class="admin-nav-link {{ request()->routeIs('admin.attendance.*') && request()->route('group') === 'students' ? 'is-active' : '' }}"
+                       href="{{ route('admin.attendance.index', 'students') }}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M8 3.5V7M16 3.5V7M3.5 10h17"/></svg>
-                        Calendar
+                        Student calendar
                     </a>
                     <a class="admin-nav-link {{ request()->routeIs('admin.reports.*') ? 'is-active' : '' }}"
                        href="{{ route('admin.reports.index') }}">
@@ -367,11 +384,6 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 6h11l3 3v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z"/><path d="M8 11h8M8 15h5"/></svg>
                         Notices
                     </a>
-                    <a class="admin-nav-link {{ request()->routeIs('admin.office-users.*') ? 'is-active' : '' }}"
-                       href="{{ route('admin.office-users.index') }}">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1"/><circle cx="9.5" cy="7.5" r="3"/><path d="M20 19v-1a3.5 3.5 0 0 0-2.5-3.35"/><path d="M16.5 4.7a3 3 0 0 1 0 5.6"/></svg>
-                        Office users
-                    </a>
                     <a class="admin-nav-link {{ request()->routeIs('finance.*') ? 'is-active' : '' }}"
                        href="{{ route('finance.dashboard') }}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16v10H4z"/><path d="M8 11h8M8 15h5"/></svg>
@@ -382,11 +394,6 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 6h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H9l-4 3v-3H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z"/></svg>
                         Messages
                     </a>
-                    <a class="admin-nav-link {{ request()->routeIs('admin.devices.*') ? 'is-active' : '' }}"
-                       href="{{ route('admin.devices.index') }}">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M11 17h2"/></svg>
-                        Kiosk devices
-                    </a>
                     @else
                     <div class="admin-nav-group">School</div>
                     <a class="admin-nav-link {{ request()->routeIs('messages.*') ? 'is-active' : '' }}"
@@ -395,6 +402,7 @@
                         Messages
                     </a>
                     @endif
+                    </div>
                 </nav>
 
                 <div class="admin-shell__footer">
@@ -405,6 +413,12 @@
                             <div class="admin-shell__user-role">{{ $adminUser?->roleLabel() ?? '' }}</div>
                         </div>
                     </div>
+                    @if($isHr)
+                    <a href="{{ route('office.face') }}" class="admin-nav-link {{ request()->routeIs('office.face') ? 'is-active' : '' }}" style="margin-bottom:0.55rem;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="10" r="3"/><path d="M6 19a6 6 0 0 1 12 0"/></svg>
+                        My face
+                    </a>
+                    @endif
                     <a href="{{ route('password.edit') }}" class="admin-nav-link {{ request()->routeIs('password.*') ? 'is-active' : '' }}" style="margin-bottom:0.55rem;">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
                         Change password

@@ -43,7 +43,7 @@
             <div class="card border-0 shadow-sm h-100"><div class="card-body">
                 <div class="text-muted small text-uppercase">Present today</div>
                 <div class="display-6 fw-semibold text-success">{{ $todayPresent }}</div>
-                <div class="small text-muted">Teachers {{ $todayPresentTeachers }} · Students {{ $todayPresentStudents }}</div>
+                <div class="small text-muted">Staff &amp; teachers {{ $todayPresentWorkforce }} · Students {{ $todayPresentStudents }}</div>
             </div></div>
         </div>
         <div class="col-md-8">
@@ -63,5 +63,6 @@
         </div>
     </div>
 
-    <a href="{{ route('admin.attendance.index') }}" class="btn btn-outline-primary">Open attendance calendar</a>
+    <a href="{{ route('admin.attendance.index', 'staff') }}" class="btn btn-outline-primary">Staff calendar</a>
+    <a href="{{ route('admin.attendance.index', 'students') }}" class="btn btn-outline-primary">Student calendar</a>
 @endsection

@@ -4,17 +4,25 @@
 
 @section('content')
     <h1 class="h3 mb-1">Hello, {{ $user->name }}</h1>
-    <p class="text-muted">{{ $user->schoolClass?->name ?? 'No class' }} · Face check-in only at school kiosk</p>
+    <p class="text-muted">{{ $user->schoolClass?->name ?? 'No class' }} · Face check-in at school{{ $user->rides_bus ? ' and bus' : '' }} kiosk</p>
     <p class="mb-4"><a href="{{ route('student.courses.index') }}" class="btn btn-primary btn-sm">Open my subjects</a></p>
 
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <h2 class="h6 text-muted">Today</h2>
+            @if($user->rides_bus)
+                <div>Bus in: <strong>{{ $today?->bus_checkin_time?->format('H:i') ?? '—' }}</strong></div>
+            @endif
             @if($today?->checkin_time)
-                <div>Checked in: <strong>{{ $today->checkin_time->format('H:i') }}</strong></div>
-                <div>Checked out: <strong>{{ $today->checkout_time?->format('H:i') ?? '—' }}</strong></div>
+                <div>School in: <strong>{{ $today->checkin_time->format('H:i') }}</strong></div>
+                <div>School out: <strong>{{ $today->checkout_time?->format('H:i') ?? '—' }}</strong></div>
+            @elseif($today?->bus_checkin_time)
+                <div class="text-info">On the bus — not at school yet</div>
             @else
                 <div class="text-muted">Not checked in yet today.</div>
+            @endif
+            @if($user->rides_bus)
+                <div>Bus out: <strong>{{ $today?->bus_checkout_time?->format('H:i') ?? '—' }}</strong></div>
             @endif
         </div>
     </div>

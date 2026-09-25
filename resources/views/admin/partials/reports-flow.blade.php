@@ -4,7 +4,7 @@
         ['key' => 'hub', 'label' => 'Reports hub', 'route' => 'admin.reports.index'],
         ['key' => 'billing', 'label' => 'Billing', 'route' => 'admin.reports.billing'],
         ['key' => 'students', 'label' => 'Student attendance', 'route' => 'admin.reports.attendance.students'],
-        ['key' => 'teachers', 'label' => 'Teacher attendance', 'route' => 'admin.reports.attendance.teachers'],
+        ['key' => 'teachers', 'label' => 'Staff attendance', 'route' => 'admin.reports.attendance.teachers'],
     ];
 @endphp
 <div class="card border-0 shadow-sm mb-4">

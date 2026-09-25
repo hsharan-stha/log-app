@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreFaceDescriptorRequest;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -84,5 +86,42 @@ class OfficeUserController extends Controller
         $officeUser->save();
 
         return redirect()->route('admin.office-users.index')->with('success', 'Office user updated.');
+    }
+
+    public function registerFace(User $officeUser): View
+    {
+        $this->ensureFaceStaff($officeUser);
+
+        return view('admin.staff.register-face', [
+            'staff' => $officeUser,
+            'facePostUrl' => route('admin.office-users.register-face.store', $officeUser),
+            'faceRedirectUrl' => route('admin.office-users.index'),
+            'faceBackUrl' => route('admin.office-users.index'),
+            'faceBackLabel' => 'Back to office users',
+        ]);
+    }
+
+    public function storeFaceDescriptor(StoreFaceDescriptorRequest $request, User $officeUser): RedirectResponse|JsonResponse
+    {
+        $this->ensureFaceStaff($officeUser);
+
+        $officeUser->update([
+            'face_descriptor' => $request->validated('descriptor'),
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok' => true,
+                'message' => 'Face registered for '.$officeUser->name.'.',
+                'redirect' => route('admin.office-users.index'),
+            ]);
+        }
+
+        return redirect()->route('admin.office-users.index')->with('success', 'Face registered for '.$officeUser->name.'.');
+    }
+
+    private function ensureFaceStaff(User $user): void
+    {
+        abort_unless(in_array($user->role, self::ROLES, true), 404);
     }
 }

@@ -9,6 +9,7 @@
         'primaryLabel' => 'Add teacher',
         'nextHref' => route('admin.subjects.index'),
         'nextLabel' => 'Subjects',
+        'hideFlowSteps' => true,
     ])
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
         <div>

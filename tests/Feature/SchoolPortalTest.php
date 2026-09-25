@@ -14,9 +14,70 @@ class SchoolPortalTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_attendance_kiosk_requires_login(): void
+    public function test_attendance_kiosk_without_device_does_not_open(): void
     {
-        $this->get('/attendance')->assertRedirect(route('login'));
+        $this->get('/attendance')->assertRedirect(route('attendance.unauthorized'));
+    }
+
+    public function test_registered_device_acts_as_attendance_login_until_admin_revokes_it(): void
+    {
+        $operator = User::factory()->create(['role' => 'attendance']);
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $registered = $this->actingAs($operator)->post(route('attendance.setup.store'), [
+            'name' => 'Entrance Tablet',
+            'location' => 'school',
+        ]);
+        $registered->assertRedirect(route('attendance.scan'));
+
+        $tokenCookie = collect($registered->headers->getCookies())
+            ->first(fn ($cookie) => $cookie->getName() === 'kiosk_device_token');
+        $this->assertNotNull($tokenCookie);
+        $this->assertGreaterThan(60 * 24 * 365, $tokenCookie->getExpiresTime() - time());
+        $plainToken = $tokenCookie->getValue();
+
+        $this->actingAs($operator)
+            ->withUnencryptedCookie('kiosk_device_token', $plainToken)
+            ->post('/logout')
+            ->assertRedirect(route('attendance.scan'));
+
+        auth()->logout();
+
+        $this->withUnencryptedCookie('kiosk_device_token', $plainToken)
+            ->get('/attendance')
+            ->assertOk();
+
+        $this->withUnencryptedCookie('kiosk_device_token', $plainToken)
+            ->get('/')
+            ->assertRedirect(route('attendance.scan'));
+
+        $device = KioskDevice::query()->whereNull('revoked_at')->first();
+        $this->actingAs($admin)->post(route('admin.devices.revoke', $device))->assertRedirect();
+
+        auth()->logout();
+
+        $this->withUnencryptedCookie('kiosk_device_token', $plainToken)
+            ->get('/attendance')
+            ->assertRedirect(route('attendance.unauthorized'));
+
+        $this->withUnencryptedCookie('kiosk_device_token', $plainToken)
+            ->get('/')
+            ->assertRedirect(route('login'));
+
+        $this->get('/attendance/setup')->assertRedirect(route('login'));
+    }
+
+    public function test_registered_device_opens_attendance_without_login_and_root_redirects_there(): void
+    {
+        ['plain_token' => $plain] = KioskDevice::register('Gate', 'school');
+
+        $this->withUnencryptedCookie('kiosk_device_token', $plain)
+            ->get('/attendance')
+            ->assertOk();
+
+        $this->withUnencryptedCookie('kiosk_device_token', $plain)
+            ->get('/')
+            ->assertRedirect(route('attendance.scan'));
     }
 
     public function test_attendance_kiosk_requires_registered_device(): void
@@ -28,22 +89,61 @@ class SchoolPortalTest extends TestCase
             ->assertRedirect(route('attendance.unauthorized'));
     }
 
-    public function test_admin_cannot_setup_or_open_kiosk(): void
+    public function test_admin_cannot_setup_kiosk_but_registered_device_can_open_it(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        ['plain_token' => $plain] = KioskDevice::register('Gate');
+        ['plain_token' => $plain] = KioskDevice::register('Gate', 'school');
 
         $this->actingAs($admin)->get('/attendance/setup')->assertForbidden();
-        $this->actingAs($admin)
-            ->withUnencryptedCookie('kiosk_device_token', $plain)
+        $this->withUnencryptedCookie('kiosk_device_token', $plain)
             ->get('/attendance')
+            ->assertOk();
+    }
+
+    public function test_only_one_kiosk_can_be_registered_until_admin_revokes_it(): void
+    {
+        $operator = User::factory()->create(['role' => 'attendance']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $hr = User::factory()->create(['role' => 'hr']);
+
+        $this->actingAs($operator)->post(route('attendance.setup.store'), [
+            'name' => 'Entrance Tablet',
+            'location' => 'school',
+        ])->assertRedirect(route('attendance.scan'));
+
+        $this->assertSame(1, KioskDevice::query()->whereNull('revoked_at')->count());
+
+        $this->actingAs($operator)->post(route('attendance.setup.store'), [
+            'name' => 'Second Tablet',
+            'location' => 'bus',
+        ])->assertSessionHasErrors('name');
+
+        $this->assertSame(1, KioskDevice::query()->whereNull('revoked_at')->count());
+
+        $device = KioskDevice::query()->whereNull('revoked_at')->first();
+
+        $this->actingAs($hr)
+            ->post(route('admin.devices.revoke', $device))
             ->assertForbidden();
+
+        $this->actingAs($admin)
+            ->post(route('admin.devices.revoke', $device))
+            ->assertRedirect(route('admin.devices.index'));
+
+        $this->assertSame(0, KioskDevice::query()->whereNull('revoked_at')->count());
+
+        $this->actingAs($operator)->post(route('attendance.setup.store'), [
+            'name' => 'Replacement Tablet',
+            'location' => 'school',
+        ])->assertRedirect(route('attendance.scan'));
+
+        $this->assertSame(1, KioskDevice::query()->whereNull('revoked_at')->count());
     }
 
     public function test_registered_device_can_open_kiosk_when_attendance_user_signed_in(): void
     {
         $operator = User::factory()->create(['role' => 'attendance']);
-        ['plain_token' => $plain] = KioskDevice::register('Gate', $operator);
+        ['plain_token' => $plain] = KioskDevice::register('Gate', 'school', $operator);
 
         $this->actingAs($operator)
             ->withUnencryptedCookie('kiosk_device_token', $plain)
@@ -88,7 +188,7 @@ class SchoolPortalTest extends TestCase
         ]);
 
         $operator = User::factory()->create(['role' => 'attendance']);
-        ['plain_token' => $plain] = KioskDevice::register('Gate', $operator);
+        ['plain_token' => $plain] = KioskDevice::register('Gate', 'school', $operator);
 
         $descriptor = array_fill(0, 128, 0.1);
 
@@ -98,7 +198,7 @@ class SchoolPortalTest extends TestCase
             ])
             ->postJson('/attendance/verify', ['descriptor' => $descriptor])
             ->assertOk()
-            ->assertJson(['action' => 'checkin']);
+            ->assertJson(['action' => 'school_checkin']);
 
         Notification::assertSentTo($guardian, StudentAttendanceAlert::class);
         Notification::assertNotSentTo($teacher, StudentAttendanceAlert::class);

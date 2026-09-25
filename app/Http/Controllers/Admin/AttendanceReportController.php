@@ -36,7 +36,7 @@ class AttendanceReportController extends Controller
             ->keyBy('user_id');
 
         $people = User::query()
-            ->whereIn('role', ['teacher', 'student'])
+            ->whereIn('role', array_merge(User::FACE_STAFF_ROLES, ['student']))
             ->with('schoolClass')
             ->orderBy('name')
             ->get(['id', 'name', 'email', 'role', 'class_id', 'roll_number']);
@@ -59,10 +59,11 @@ class AttendanceReportController extends Controller
         };
 
         $teacherRows = $people->where('role', 'teacher')->values()->map($mapRow);
+        $staffRows = $people->whereIn('role', OfficeUserController::ROLES)->values()->map($mapRow);
         $studentRows = $people->where('role', 'student')->values()->map($mapRow);
 
         $role = $request->query('role', 'all');
-        if (! in_array($role, ['all', 'teacher', 'student'], true)) {
+        if (! in_array($role, ['all', 'workforce', 'student'], true)) {
             $role = 'all';
         }
 
@@ -70,6 +71,7 @@ class AttendanceReportController extends Controller
             'month' => $month,
             'monthLabel' => $start->translatedFormat('F Y'),
             'teacherRows' => $teacherRows,
+            'staffRows' => $staffRows,
             'studentRows' => $studentRows,
             'role' => $role,
             'reportKind' => 'all',
@@ -78,12 +80,12 @@ class AttendanceReportController extends Controller
 
     public function teachers(Request $request): View
     {
-        $request->merge(['role' => 'teacher']);
+        $request->merge(['role' => 'workforce']);
 
         return $this->monthly($request)->with([
-            'reportKind' => 'teacher',
-            'reportTitle' => 'Teacher attendance report',
-            'reportBlurb' => 'Monthly weekday summary for teachers.',
+            'reportKind' => 'workforce',
+            'reportTitle' => 'Staff attendance report',
+            'reportBlurb' => 'Monthly weekday summary for teachers and staff.',
         ]);
     }
 
@@ -214,6 +216,6 @@ class AttendanceReportController extends Controller
 
     private function ensureStaff(User $user): void
     {
-        abort_unless(in_array($user->role, ['teacher', 'student'], true), 404);
+        abort_unless(in_array($user->role, array_merge(User::FACE_STAFF_ROLES, ['student']), true), 404);
     }
 }

@@ -13,7 +13,7 @@
     <div class="card border-0 shadow-sm">
         <table class="table mb-0 align-middle">
             <thead class="table-light">
-            <tr><th>Name</th><th>Email</th><th>Role</th><th></th></tr>
+            <tr><th>Name</th><th>Email</th><th>Role</th><th>Face</th><th></th></tr>
             </thead>
             <tbody>
             @forelse($users as $user)
@@ -21,10 +21,20 @@
                     <td class="fw-medium">{{ $user->name }}</td>
                     <td>{{ $user->email }}</td>
                     <td><span class="badge text-bg-secondary">{{ $user->roleLabel() }}</span></td>
-                    <td class="text-end"><a href="{{ route('admin.office-users.edit', $user) }}">Edit</a></td>
+                    <td>
+                        @if($user->face_descriptor)
+                            <span class="badge text-bg-success">Registered</span>
+                        @else
+                            <span class="badge text-bg-warning text-dark">Not registered</span>
+                        @endif
+                    </td>
+                    <td class="text-end">
+                        <a href="{{ route('admin.office-users.register-face', $user) }}">Face</a>
+                        <a href="{{ route('admin.office-users.edit', $user) }}">Edit</a>
+                    </td>
                 </tr>
             @empty
-                <tr><td colspan="4" class="text-center text-muted py-4">No office users yet.</td></tr>
+                <tr><td colspan="5" class="text-center text-muted py-4">No office users yet.</td></tr>
             @endforelse
             </tbody>
         </table>

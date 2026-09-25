@@ -10,7 +10,7 @@
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-body py-3">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-            <div class="d-flex flex-wrap align-items-center gap-2">
+            <div class="d-flex flex-wrap align-items-center gap-2 {{ !empty($hideFlowSteps) ? 'd-none' : '' }}">
                 <a href="{{ route('admin.academics.index') }}" class="btn btn-sm btn-outline-dark">Academics hub</a>
                 @foreach($steps as $step)
                     <a href="{{ route($step['route']) }}"
@@ -24,7 +24,7 @@
                     <a href="{{ $primaryHref }}" class="btn btn-sm btn-primary">{{ $primaryLabel ?? 'Add' }}</a>
                 @endisset
                 @isset($nextHref)
-                    <a href="{{ $nextHref }}" class="btn btn-sm btn-outline-primary">{{ $nextLabel ?? 'Next' }} →</a>
+                    <a href="{{ $nextHref }}" class="btn btn-sm btn-outline-primary {{ !empty($hideFlowSteps) ? 'd-none' : '' }}">{{ $nextLabel ?? 'Next' }} →</a>
                 @endisset
             </div>
         </div>

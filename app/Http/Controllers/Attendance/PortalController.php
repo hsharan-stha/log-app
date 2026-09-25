@@ -13,9 +13,11 @@ class PortalController extends Controller
     public function home(Request $request): View
     {
         $existing = KioskDevice::findActiveByPlainToken($request->cookie(EnsureKioskDevice::COOKIE));
+        $active = KioskDevice::active();
 
         return view('attendance.home', [
             'existingDevice' => $existing,
+            'blockingDevice' => $existing === null ? $active : null,
         ]);
     }
 }

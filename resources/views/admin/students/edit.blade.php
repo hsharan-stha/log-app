@@ -37,6 +37,11 @@
                 <label class="form-label">Phone</label>
                 <input name="phone" class="form-control" value="{{ old('phone', $student->phone) }}">
             </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" name="rides_bus" value="1" id="rides_bus" @checked(old('rides_bus', $student->rides_bus))>
+                <label class="form-check-label" for="rides_bus">Uses school bus</label>
+                <div class="form-text">Bus students must check in/out at the bus kiosk and school kiosk (bus → school → school → bus).</div>
+            </div>
             <div class="mb-3">
                 <label class="form-label">Password (optional)</label>
                 <input type="password" name="password" class="form-control">

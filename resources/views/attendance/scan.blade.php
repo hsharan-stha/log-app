@@ -15,135 +15,172 @@
             height: 100%;
             margin: 0;
         }
-        .attendance-kiosk {
+        .kot-kiosk {
             height: 100dvh;
             max-height: 100dvh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            padding-bottom: env(safe-area-inset-bottom, 0);
+            background: #eef3f8;
+            color: #1c2834;
+            font-family: "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
         }
-        .attendance-kiosk__header {
+        .kot-top {
             flex: 0 0 auto;
-            padding: 0.5rem 0.75rem;
-            padding-top: max(0.5rem, env(safe-area-inset-top, 0));
-            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.85rem 1.25rem;
+            padding-top: max(0.85rem, env(safe-area-inset-top, 0));
+            background: linear-gradient(180deg, #0a4f86 0%, #083e6b 100%);
+            color: #fff;
         }
-        .attendance-kiosk__header h1 {
-            font-size: clamp(1rem, 3.5vw, 1.25rem);
-            line-height: 1.2;
-            margin: 0;
+        .kot-brand { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+        .kot-mark {
+            width: 42px; height: 42px; border-radius: 10px;
+            background: #fff; color: #0a4f86;
+            display: grid; place-items: center;
+            font-weight: 800; letter-spacing: -0.04em;
         }
-        .attendance-kiosk__header p {
-            font-size: 0.7rem;
-            line-height: 1.25;
-            margin: 0.15rem 0 0;
-            color: #6c757d;
+        .kot-product { font-size: 1.05rem; font-weight: 700; line-height: 1.1; }
+        .kot-place { font-size: 0.78rem; opacity: 0.85; margin-top: 0.15rem; }
+        .kot-clock { text-align: right; }
+        .kot-date { font-size: 0.85rem; opacity: 0.9; }
+        .kot-time {
+            font-size: clamp(2rem, 5vw, 3.1rem);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.04em;
+            line-height: 1;
         }
-        .attendance-kiosk__main {
+        .kot-main {
             flex: 1 1 auto;
             min-height: 0;
             display: flex;
             flex-direction: column;
-            padding: 0.5rem 0.75rem;
-            gap: 0.5rem;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1rem 1rem 0.6rem;
+        }
+        .kot-stage {
+            width: min(920px, 100%);
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
         }
         .attendance-kiosk__video-wrap {
-            flex: 1 1 0;
-            min-height: 0;
             position: relative;
-            border-radius: 0.5rem;
+            flex: 1 1 auto;
+            border-radius: 18px;
             overflow: hidden;
-            background: #212529;
-            box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.12);
+            background: #101820;
+            box-shadow: 0 12px 32px rgba(8, 40, 70, 0.18);
+            border: 6px solid #fff;
         }
-        .attendance-kiosk__video-wrap video {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .attendance-kiosk__video-wrap video,
         .attendance-kiosk__video-wrap #face-overlay {
             position: absolute;
             inset: 0;
             width: 100%;
             height: 100%;
+        }
+        .attendance-kiosk__video-wrap video { object-fit: cover; }
+        .attendance-kiosk__video-wrap #face-overlay { pointer-events: none; z-index: 2; }
+        .kot-guide {
+            position: absolute;
+            inset: 8% 22%;
+            border: 3px solid rgba(255, 255, 255, 0.85);
+            border-radius: 50%;
+            box-shadow: 0 0 0 999px rgba(8, 30, 52, 0.28);
+            z-index: 3;
             pointer-events: none;
-            z-index: 2;
         }
-        .attendance-kiosk__controls {
-            flex: 0 0 auto;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            justify-content: center;
-            align-items: center;
-        }
-        .attendance-kiosk__footer {
-            flex: 0 0 auto;
-            font-size: 0.65rem;
-            line-height: 1.2;
-            color: #868e96;
+        .kot-status {
+            font-size: 1.15rem;
+            font-weight: 650;
             text-align: center;
-            padding: 0 0.5rem 0.35rem;
+            color: #0a4f86;
+            min-height: 1.4rem;
         }
-        .attendance-kiosk__status {
+        .kot-result {
+            width: min(920px, 100%);
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.05rem;
+            font-weight: 700;
+            padding: 0.7rem 1rem;
+            margin: 0;
+        }
+        .kot-result--success { background: #e5f6ea; color: #146c43; }
+        .kot-result--danger { background: #fdecea; color: #b02a37; }
+        .kot-foot {
             flex: 0 0 auto;
+            text-align: center;
             font-size: 0.75rem;
-            line-height: 1.25;
-            text-align: center;
-            color: #6c757d;
-            min-height: 1.25rem;
+            color: #6b7c8f;
+            padding: 0.35rem 0.75rem max(0.5rem, env(safe-area-inset-bottom, 0));
         }
-        .attendance-kiosk__result {
-            flex: 0 0 auto;
-            font-size: 0.8rem;
-            padding: 0.35rem 0.5rem;
-            margin: 0 !important;
-            max-height: 4.5rem;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-box-orient: vertical;
-            -webkit-line-clamp: 3;
-            line-clamp: 3;
-        }
+        .kot-auth { font-size: 0.75rem; opacity: 0.9; }
+        .kot-auth a, .kot-auth button { color: #fff; }
     </style>
 </head>
-<body class="bg-light attendance-kiosk">
-<header class="attendance-kiosk__header bg-white">
-    <div class="d-flex justify-content-between align-items-start gap-3">
+<body class="kot-kiosk">
+<header class="kot-top">
+    <div class="kot-brand">
+        <div class="kot-mark" aria-hidden="true">AB</div>
         <div>
-            <h1 class="fw-semibold">School attendance</h1>
-            <p class="mb-0">Students &amp; teachers — stand in view; after ~3 seconds with a steady face, check-in or check-out runs automatically.</p>
+            <div class="kot-product">{{ ($kioskLocation ?? 'school') === 'bus' ? 'Bus attendance' : 'Face attendance' }}</div>
+            <div class="kot-place">
+                {{ $kioskName ?? 'School kiosk' }}
+                @if(auth()->check())
+                    <span class="kot-auth">· {{ auth()->user()->name }}
+                        <a href="{{ route('attendance.home') }}">Home</a>
+                        <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                            @csrf
+                            <button class="btn btn-link btn-sm p-0 align-baseline" type="submit">Sign out</button>
+                        </form>
+                    </span>
+                @endif
+            </div>
         </div>
-        <div class="text-end flex-shrink-0">
-            <div class="small text-muted">{{ auth()->user()->name }}</div>
-            <a class="small" href="{{ route('attendance.home') }}">Home</a>
-            <form method="POST" action="{{ route('logout') }}" class="d-inline">
-                @csrf
-                <button class="btn btn-link btn-sm p-0 align-baseline" type="submit">Sign out</button>
-            </form>
-        </div>
+    </div>
+    <div class="kot-clock">
+        <div id="kot-date" class="kot-date"></div>
+        <div id="kot-time" class="kot-time">--:--:--</div>
     </div>
 </header>
 
-<div class="attendance-kiosk__main">
-    <div class="attendance-kiosk__video-wrap">
-        <video id="video" autoplay muted playsinline></video>
-        <canvas id="face-overlay" aria-hidden="true"></canvas>
+<div class="kot-main">
+    <div class="kot-stage">
+        <div class="attendance-kiosk__video-wrap">
+            <video id="video" autoplay muted playsinline webkit-playsinline></video>
+            <canvas id="face-overlay" aria-hidden="true"></canvas>
+            <div class="kot-guide" aria-hidden="true"></div>
+        </div>
     </div>
     <canvas id="snapshot-canvas" class="d-none" aria-hidden="true"></canvas>
 
-    <div class="attendance-kiosk__controls">
-        <button id="btn-start" class="btn btn-outline-secondary btn-sm px-3 d-none" type="button">Try camera again</button>
-    </div>
-
-    <div id="status" class="attendance-kiosk__status">Loading face models…</div>
-    <div id="result" class="alert attendance-kiosk__result d-none text-center py-2" role="alert"></div>
+    <div id="status" class="kot-status">Loading face models…</div>
+    <div id="result" class="kot-result d-none" role="alert"></div>
+    <button id="btn-start" class="btn btn-outline-secondary btn-sm px-3 d-none" type="button">Try camera again</button>
 </div>
 
-<p class="attendance-kiosk__footer mb-0">Need help? Ask an admin to register your face.</p>
+<p class="kot-foot mb-0">Look at the camera. Clock-in and clock-out are recorded automatically.</p>
+<script>
+    (function () {
+        const timeEl = document.getElementById('kot-time');
+        const dateEl = document.getElementById('kot-date');
+        const tick = () => {
+            const now = new Date();
+            timeEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            dateEl.textContent = now.toLocaleDateString([], { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' });
+        };
+        tick();
+        setInterval(tick, 1000);
+    })();
+</script>
 
 <script src="{{ asset('vendor/bootstrap/5.3.3/js/bootstrap.bundle.min.js') }}"></script>
 <script defer src="{{ asset('vendor/face-api.js/0.22.2/face-api.min.js') }}"></script>
@@ -185,7 +222,6 @@
         let faceStableSince = null;
         let lastFaceSeenAt = 0;
         let tickTimer = null;
-        let audioCtx = null;
 
         async function loadModels() {
             try {
@@ -200,42 +236,104 @@
             }
         }
 
-        async function ensureAudio() {
+        const thankYouAudioUrl = @json(asset('sounds/arigatou-gozaimasu.wav')).concat('?v=google1');
+        let thankYouCtx = null;
+        let thankYouBuffer = null;
+        let thankYouFallback = null;
+
+        function getThankYouContext() {
             const Ctx = window.AudioContext || window.webkitAudioContext;
             if (!Ctx) {
                 return null;
             }
-            if (!audioCtx) {
-                audioCtx = new Ctx();
+            if (!thankYouCtx) {
+                thankYouCtx = new Ctx();
             }
-            if (audioCtx.state === 'suspended') {
-                await audioCtx.resume();
-            }
-            return audioCtx;
+            return thankYouCtx;
         }
 
-        function playCheckinChime() {
-            ensureAudio().then((ctx) => {
+        async function unlockThankYouAudio() {
+            const ctx = getThankYouContext();
+            if (ctx && ctx.state === 'suspended') {
+                try {
+                    await ctx.resume();
+                } catch (e) {}
+            }
+        }
+
+        async function preloadThankYouAudio() {
+            try {
+                thankYouFallback = new Audio(thankYouAudioUrl);
+                thankYouFallback.preload = 'auto';
+                thankYouFallback.load();
+
+                const ctx = getThankYouContext();
                 if (!ctx) {
                     return;
                 }
-                const t0 = ctx.currentTime;
-                const blip = (freq, start, len) => {
-                    const o = ctx.createOscillator();
-                    const g = ctx.createGain();
-                    o.type = 'sine';
-                    o.frequency.setValueAtTime(freq, t0 + start);
-                    g.gain.setValueAtTime(0.0001, t0 + start);
-                    g.gain.exponentialRampToValueAtTime(0.14, t0 + start + 0.02);
-                    g.gain.exponentialRampToValueAtTime(0.0001, t0 + start + len);
-                    o.connect(g);
-                    g.connect(ctx.destination);
-                    o.start(t0 + start);
-                    o.stop(t0 + start + len + 0.03);
-                };
-                blip(1047, 0, 0.1);
-                blip(784, 0.12, 0.12);
-            }).catch(() => {});
+                const response = await fetch(thankYouAudioUrl, { cache: 'force-cache' });
+                const arrayBuffer = await response.arrayBuffer();
+                thankYouBuffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
+                await unlockThankYouAudio();
+            } catch (e) {
+                console.warn('Thank-you audio preload failed', e);
+            }
+        }
+
+        function playThankYouVoice() {
+            // Play immediately — no await, no UI work before this.
+            try {
+                const ctx = getThankYouContext();
+                if (ctx && thankYouBuffer) {
+                    if (ctx.state === 'suspended') {
+                        ctx.resume().catch(() => {});
+                    }
+                    const source = ctx.createBufferSource();
+                    source.buffer = thankYouBuffer;
+                    source.connect(ctx.destination);
+                    source.start(0);
+                    return;
+                }
+            } catch (e) {
+                console.warn('WebAudio thank-you failed', e);
+            }
+
+            try {
+                if (!thankYouFallback) {
+                    thankYouFallback = new Audio(thankYouAudioUrl);
+                }
+                thankYouFallback.pause();
+                thankYouFallback.currentTime = 0;
+                const playPromise = thankYouFallback.play();
+                if (playPromise && typeof playPromise.catch === 'function') {
+                    playPromise.catch((err) => console.warn('Thank-you audio blocked', err));
+                }
+            } catch (e) {
+                console.warn('Thank-you voice failed', e);
+            }
+        }
+
+        function isAttendanceSuccessAction(action) {
+            return action === 'checkin'
+                || action === 'checkout'
+                || action === 'school_checkin'
+                || action === 'school_checkout'
+                || action === 'bus_checkin'
+                || action === 'bus_checkout';
+        }
+
+        async function ensureVideoPlaying() {
+            if (!video.srcObject) {
+                return false;
+            }
+            try {
+                if (video.paused) {
+                    await video.play();
+                }
+            } catch (e) {
+                return false;
+            }
+            return video.readyState >= 2 && video.videoWidth > 0;
         }
 
         function resizeOverlay() {
@@ -244,12 +342,14 @@
             if (!w || !h) {
                 return;
             }
-            overlay.width = w;
-            overlay.height = h;
+            if (overlay.width !== w || overlay.height !== h) {
+                overlay.width = w;
+                overlay.height = h;
+            }
         }
 
         function showResult(type, message) {
-            resultEl.className = `alert alert-${type} attendance-kiosk__result text-center`;
+            resultEl.className = `kot-result kot-result--${type === 'success' ? 'success' : 'danger'}`;
             resultEl.textContent = message;
             resultEl.classList.remove('d-none');
         }
@@ -298,13 +398,14 @@
                     throw new Error(payload.message || 'Verification failed.');
                 }
 
+                // Sound first — right when check-in/out is confirmed, before UI updates.
+                if (isAttendanceSuccessAction(payload.action)) {
+                    playThankYouVoice();
+                }
+
                 const name = payload.staff_name ? `${payload.staff_name}: ` : '';
                 statusEl.textContent = 'Success';
                 showResult('success', `${name}${payload.message}`);
-
-                if (payload.action === 'checkin') {
-                    playCheckinChime();
-                }
 
                 cooldownUntil = Date.now() + COOLDOWN_MS;
                 faceStableSince = null;
@@ -340,6 +441,13 @@
 
         async function detectionTick(now) {
             if (!cameraLive || !modelsReady || verifying) {
+                return;
+            }
+
+            const playing = await ensureVideoPlaying();
+            if (!playing) {
+                statusEl.textContent = 'Starting camera feed…';
+                drawOverlay(null);
                 return;
             }
 
@@ -407,19 +515,77 @@
             overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
         }
 
+        async function waitForVideoFrames(timeoutMs = 8000) {
+            const started = Date.now();
+            while (Date.now() - started < timeoutMs) {
+                if (await ensureVideoPlaying()) {
+                    return true;
+                }
+                await new Promise((r) => setTimeout(r, 150));
+            }
+            return video.videoWidth > 0;
+        }
+
         async function startCamera() {
             statusEl.textContent = 'Requesting camera…';
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+
+            if (video.srcObject) {
+                try {
+                    video.srcObject.getTracks().forEach((t) => t.stop());
+                } catch (e) {}
+                video.srcObject = null;
+            }
+
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: 'user',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                },
+                audio: false,
+            });
             video.srcObject = stream;
-            await video.play();
-            await ensureAudio();
+            video.muted = true;
+            video.playsInline = true;
+            video.setAttribute('playsinline', 'true');
+            video.setAttribute('webkit-playsinline', 'true');
+            video.setAttribute('autoplay', 'true');
+
+            try {
+                await video.play();
+            } catch (e) {
+                // Some browsers pause until frames arrive; waitForVideoFrames will keep trying.
+                console.warn('Initial video.play() deferred', e);
+            }
+
             cameraLive = true;
-            statusEl.textContent = 'Position your face in the frame.';
             btnStart.classList.add('d-none');
             resizeOverlay();
             window.addEventListener('resize', resizeOverlay);
-            video.addEventListener('loadedmetadata', resizeOverlay, { once: true });
+            video.addEventListener('loadedmetadata', resizeOverlay);
+            video.addEventListener('loadeddata', () => {
+                ensureVideoPlaying();
+                resizeOverlay();
+            });
+            // If the browser pauses the stream (common on tablets), resume without a tap.
+            video.addEventListener('pause', () => {
+                if (cameraLive) {
+                    ensureVideoPlaying();
+                }
+            });
+
+            // Unlock audio as soon as camera is live so thank-you has no delay.
+            unlockThankYouAudio();
+
             startAttendanceLoop();
+
+            const ready = await waitForVideoFrames();
+            if (ready) {
+                statusEl.textContent = 'Position your face in the frame.';
+                resizeOverlay();
+            } else {
+                statusEl.textContent = 'Camera started — waiting for video…';
+            }
         }
 
         btnStart.addEventListener('click', () => {
@@ -432,7 +598,20 @@
             });
         });
 
+        // Keep scanning when returning to the kiosk tab / unlocking the tablet.
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && cameraLive) {
+                ensureVideoPlaying();
+                if (!tickTimer) {
+                    startAttendanceLoop();
+                }
+            }
+        });
+
         async function beginKiosk() {
+            // Decode thank-you WAV into memory so playback is instant on success.
+            preloadThankYouAudio();
+
             await loadModels();
             if (!modelsReady) {
                 return;

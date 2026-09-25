@@ -39,6 +39,11 @@
                 <label class="form-label">Phone</label>
                 <input name="phone" class="form-control" value="{{ old('phone') }}">
             </div>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" name="rides_bus" value="1" id="rides_bus" @checked(old('rides_bus'))>
+                <label class="form-check-label" for="rides_bus">Uses school bus</label>
+                <div class="form-text">Bus students must check in/out at the bus kiosk and school kiosk (bus → school → school → bus).</div>
+            </div>
             <p class="small text-muted">Default password: from config (usually <code>password</code>)</p>
             <button class="btn btn-primary">Save</button>
             <a href="{{ route('admin.students.index') }}" class="btn btn-link">Cancel</a>

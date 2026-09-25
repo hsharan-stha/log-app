@@ -67,6 +67,7 @@ class StudentController extends Controller
             'phone' => $data['phone'] ?? null,
             'class_id' => $data['class_id'],
             'roll_number' => $data['roll_number'],
+            'rides_bus' => $data['rides_bus'],
             'password' => Hash::make(config('staff.default_password')),
             'role' => 'student',
         ]);
@@ -102,6 +103,7 @@ class StudentController extends Controller
             'phone' => $data['phone'] ?? null,
             'class_id' => $data['class_id'],
             'roll_number' => $data['roll_number'],
+            'rides_bus' => $data['rides_bus'],
         ]);
 
         if (! empty($data['password'])) {
@@ -180,9 +182,11 @@ class StudentController extends Controller
                     ->ignore($student?->id),
             ],
             'phone' => ['nullable', 'string', 'max:40'],
+            'rides_bus' => ['sometimes', 'boolean'],
         ]);
 
         $data['roll_number'] = trim($data['roll_number']);
+        $data['rides_bus'] = $request->boolean('rides_bus');
 
         return $data;
     }

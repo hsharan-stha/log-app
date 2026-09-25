@@ -6,11 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\KioskDevice;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function index(): View
+    public function index(): RedirectResponse
+    {
+        return redirect()->route('admin.attendance.index', 'staff');
+    }
+
+    public function overview(): View
     {
         $today = now()->toDateString();
 
@@ -19,8 +25,8 @@ class DashboardController extends Controller
         $totalGuardians = User::query()->where('role', 'guardian')->count();
         $activeDevices = KioskDevice::query()->whereNull('revoked_at')->count();
 
-        $todayPresentTeachers = User::query()
-            ->where('role', 'teacher')
+        $todayPresentWorkforce = User::query()
+            ->whereIn('role', User::FACE_STAFF_ROLES)
             ->whereHas('attendances', function ($query) use ($today) {
                 $query->whereDate('attendance_date', $today)->whereNotNull('checkin_time');
             })
@@ -43,7 +49,7 @@ class DashboardController extends Controller
             ->whereNotNull('checkout_time')
             ->count();
 
-        $todayPresent = $todayPresentTeachers + $todayPresentStudents;
+        $todayPresent = $todayPresentWorkforce + $todayPresentStudents;
 
         return view('admin.dashboard', compact(
             'totalTeachers',
@@ -51,7 +57,7 @@ class DashboardController extends Controller
             'totalGuardians',
             'activeDevices',
             'todayPresent',
-            'todayPresentTeachers',
+            'todayPresentWorkforce',
             'todayPresentStudents',
             'checkinsToday',
             'checkoutsToday',

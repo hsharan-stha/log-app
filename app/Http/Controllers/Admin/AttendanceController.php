@@ -12,8 +12,16 @@ use Illuminate\View\View;
 
 class AttendanceController extends Controller
 {
-    public function index(Request $request): View
+    /** @var array<string, list<string>> */
+    private const GROUPS = [
+        'staff' => User::FACE_STAFF_ROLES,
+        'students' => ['student'],
+    ];
+
+    public function index(Request $request, string $group): View
     {
+        $roles = $this->rolesForGroup($group);
+
         $monthInput = $request->query('month');
         $month = $monthInput
             ? $request->validate(['month' => ['date_format:Y-m']])['month']
@@ -22,12 +30,12 @@ class AttendanceController extends Controller
         $start = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
         $end = $start->copy()->endOfMonth();
 
-        $eligibleTotal = $this->eligibleUsers()->count();
+        $eligibleTotal = $this->eligibleUsers($roles)->count();
 
         $presentByDate = Attendance::query()
             ->whereBetween('attendance_date', [$start->toDateString(), $end->toDateString()])
             ->whereNotNull('checkin_time')
-            ->whereHas('user', fn ($q) => $q->whereIn('role', ['teacher', 'student']))
+            ->whereHas('user', fn ($q) => $q->whereIn('role', $roles))
             ->selectRaw('DATE(attendance_date) as day_date, COUNT(DISTINCT user_id) as present_count')
             ->groupBy('day_date')
             ->pluck('present_count', 'day_date')
@@ -38,6 +46,8 @@ class AttendanceController extends Controller
         $weeks = $this->buildCalendarWeeks($start, $end, $presentByDate, $eligibleTotal);
 
         return view('admin.attendance.index', [
+            'group' => $group,
+            'groupLabel' => $this->groupLabel($group),
             'month' => $month,
             'monthLabel' => $start->translatedFormat('F Y'),
             'prevMonth' => $start->copy()->subMonth()->format('Y-m'),
@@ -48,8 +58,10 @@ class AttendanceController extends Controller
         ]);
     }
 
-    public function day(string $date): View
+    public function day(Request $request, string $group, string $date): View
     {
+        $roles = $this->rolesForGroup($group);
+
         abort_unless(preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) === 1, 404);
 
         try {
@@ -60,10 +72,12 @@ class AttendanceController extends Controller
 
         abort_unless($day->format('Y-m-d') === $date, 404);
 
-        $eligible = $this->eligibleUsers()->get();
+        $q = trim($request->string('q')->toString());
+
+        $eligible = $this->eligibleUsers($roles)->get();
 
         $attendances = Attendance::query()
-            ->with('user:id,name,email,role')
+            ->with('user:id,name,email,role,rides_bus')
             ->whereDate('attendance_date', $day->toDateString())
             ->whereNotNull('checkin_time')
             ->whereIn('user_id', $eligible->pluck('id'))
@@ -83,25 +97,62 @@ class AttendanceController extends Controller
             ->reject(fn (User $user) => $attendances->has($user->id))
             ->values();
 
+        $presentCount = $present->count();
+        $absentCount = $absent->count();
+
+        if ($q !== '') {
+            $needle = mb_strtolower($q);
+            $matchesPerson = function (User $user) use ($needle): bool {
+                return str_contains(mb_strtolower($user->name), $needle)
+                    || ($user->email !== null && str_contains(mb_strtolower($user->email), $needle));
+            };
+
+            $present = $present
+                ->filter(fn (array $row) => $matchesPerson($row['user']))
+                ->values();
+            $absent = $absent
+                ->filter(fn (User $user) => $matchesPerson($user))
+                ->values();
+        }
+
         return view('admin.attendance.day', [
+            'group' => $group,
+            'groupLabel' => $this->groupLabel($group),
             'date' => $day->toDateString(),
             'dateLabel' => $day->toFormattedDateString(),
             'month' => $day->format('Y-m'),
+            'q' => $q,
             'present' => $present,
             'absent' => $absent,
-            'presentCount' => $present->count(),
-            'absentCount' => $absent->count(),
+            'presentCount' => $presentCount,
+            'absentCount' => $absentCount,
             'eligibleTotal' => $eligible->count(),
         ]);
     }
 
     /**
+     * @return list<string>
+     */
+    private function rolesForGroup(string $group): array
+    {
+        abort_unless(isset(self::GROUPS[$group]), 404);
+
+        return self::GROUPS[$group];
+    }
+
+    private function groupLabel(string $group): string
+    {
+        return $group === 'staff' ? 'Staff & teachers' : 'Students';
+    }
+
+    /**
+     * @param  list<string>  $roles
      * @return \Illuminate\Database\Eloquent\Builder<User>
      */
-    private function eligibleUsers()
+    private function eligibleUsers(array $roles)
     {
         return User::query()
-            ->whereIn('role', ['teacher', 'student'])
+            ->whereIn('role', $roles)
             ->orderBy('role')
             ->orderBy('name');
     }

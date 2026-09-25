@@ -30,9 +30,9 @@
         <div class="col-md-4">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body d-flex flex-column">
-                    <h2 class="h5">Teacher attendance</h2>
-                    <p class="small text-muted flex-grow-1">Monthly weekday attendance summary for teachers.</p>
-                    <a href="{{ route('admin.reports.attendance.teachers') }}" class="btn btn-primary">Open teacher report</a>
+                    <h2 class="h5">Staff attendance</h2>
+                    <p class="small text-muted flex-grow-1">Monthly weekday attendance for teachers and staff.</p>
+                    <a href="{{ route('admin.reports.attendance.teachers') }}" class="btn btn-primary">Open staff report</a>
                 </div>
             </div>
         </div>

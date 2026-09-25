@@ -26,7 +26,7 @@ if (! function_exists('face_euclidean_distance')) {
 
 if (! function_exists('face_find_matching_person')) {
     /**
-     * Find teacher or student whose stored descriptor is within threshold.
+     * Find a student or workforce user whose stored descriptor is within threshold.
      *
      * @param  array<int, float>  $incomingDescriptor
      * @return array{user: User|null, distance: float|null}
@@ -37,9 +37,9 @@ if (! function_exists('face_find_matching_person')) {
         $bestDistance = null;
 
         $people = User::query()
-            ->whereIn('role', ['teacher', 'student'])
+            ->whereIn('role', array_merge(User::FACE_STAFF_ROLES, ['student']))
             ->whereNotNull('face_descriptor')
-            ->get(['id', 'name', 'role', 'face_descriptor']);
+            ->get(['id', 'name', 'role', 'face_descriptor', 'rides_bus']);
 
         foreach ($people as $user) {
             $stored = $user->face_descriptor;

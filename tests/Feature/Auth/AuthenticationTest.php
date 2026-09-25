@@ -30,6 +30,9 @@ class AuthenticationTest extends TestCase
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('admin.dashboard', absolute: false));
+        $this->actingAs($user)
+            ->get(route('admin.dashboard'))
+            ->assertRedirect(route('admin.attendance.index', 'staff'));
     }
 
     public function test_teacher_users_are_redirected_to_teacher_dashboard_after_login(): void

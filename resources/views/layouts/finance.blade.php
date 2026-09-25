@@ -26,6 +26,9 @@
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('finance.dashboard') ? 'active' : '' }}" href="{{ route('finance.dashboard') }}">Dashboard</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('finance.invoices.*') ? 'active' : '' }}" href="{{ route('finance.invoices.index') }}">Invoices</a></li>
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('finance.fee-types.*') ? 'active' : '' }}" href="{{ route('finance.fee-types.index') }}">Fee types</a></li>
+                @if(auth()->user()?->isFinance())
+                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('office.face') ? 'active' : '' }}" href="{{ route('office.face') }}">My face</a></li>
+                @endif
                 @if(auth()->user()?->isAdmin())
                     <li class="nav-item"><a class="nav-link" href="{{ route('admin.dashboard') }}">Admin</a></li>
                 @endif

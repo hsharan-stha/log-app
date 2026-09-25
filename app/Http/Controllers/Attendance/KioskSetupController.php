@@ -14,20 +14,38 @@ class KioskSetupController extends Controller
     public function show(Request $request): View
     {
         $existing = KioskDevice::findActiveByPlainToken($request->cookie(EnsureKioskDevice::COOKIE));
+        $active = KioskDevice::active();
 
         return view('attendance.setup', [
             'existingDevice' => $existing,
+            'blockingDevice' => $existing === null ? $active : null,
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
+        $existing = KioskDevice::findActiveByPlainToken($request->cookie(EnsureKioskDevice::COOKIE));
+        if ($existing !== null) {
+            return redirect()
+                ->route('attendance.scan')
+                ->with('success', 'This device is already registered as “'.$existing->name.'”.');
+        }
+
+        $active = KioskDevice::active();
+        if ($active !== null) {
+            return back()->withErrors([
+                'name' => 'A kiosk is already registered (“'.$active->name.'”). Ask an admin to revoke it before registering this device.',
+            ]);
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
+            'location' => ['required', 'in:school,bus'],
         ]);
 
         ['device' => $device, 'plain_token' => $plain] = KioskDevice::register(
             $data['name'],
+            $data['location'],
             $request->user()
         );
 
@@ -43,9 +61,11 @@ class KioskSetupController extends Controller
             'Lax'
         );
 
+        $label = $device->locationLabel();
+
         return redirect()
             ->route('attendance.scan')
-            ->with('success', 'Device “'.$device->name.'” registered. This tablet can now open face attendance.')
+            ->with('success', $label.' kiosk “'.$device->name.'” registered. This tablet can now open face attendance.')
             ->with('kiosk_plain_token', $plain)
             ->cookie($cookie);
     }

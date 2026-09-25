@@ -11,7 +11,7 @@ const config: CapacitorConfig = {
   appName: 'Staff Attendance',
   webDir: 'www',
   server: {
-    url: 'http://10.0.2.2:8000/attendance',
+    url: 'http://192.168.10.9:8000/attendance',
     cleartext: true,
   },
 };

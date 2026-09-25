@@ -21,6 +21,8 @@ class KioskDeviceController extends Controller
 
     public function revoke(KioskDevice $device): RedirectResponse
     {
+        abort_unless(auth()->user()?->isAdmin(), 403);
+
         $device->revoke();
 
         return redirect()->route('admin.devices.index')->with('success', 'Device revoked. It can no longer open face attendance.');

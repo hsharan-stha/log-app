@@ -6,12 +6,12 @@
     @php
         $reportKind = $reportKind ?? 'all';
         $formAction = match ($reportKind) {
-            'teacher' => route('admin.reports.attendance.teachers'),
+            'workforce' => route('admin.reports.attendance.teachers'),
             'student' => route('admin.reports.attendance.students'),
             default => route('admin.reports.attendance'),
         };
         $flowCurrent = match ($reportKind) {
-            'teacher' => 'teachers',
+            'workforce' => 'teachers',
             'student' => 'students',
             default => 'hub',
         };
@@ -22,7 +22,7 @@
     <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
         <div>
             <h1 class="h3 mb-1">{{ $reportTitle ?? 'Monthly attendance' }}</h1>
-            <p class="text-muted mb-0">{{ $reportBlurb ?? 'Separate summaries for teachers and students (weekdays).' }}</p>
+            <p class="text-muted mb-0">{{ $reportBlurb ?? 'Separate summaries for staff, teachers, and students (weekdays).' }}</p>
         </div>
     </div>
 
@@ -48,8 +48,8 @@
                     <div class="col-sm-auto">
                         <label for="role" class="form-label small text-muted mb-1 fw-semibold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.08em;">Show</label>
                         <select name="role" id="role" class="form-select form-select-lg shadow-sm" style="border-radius: 10px;">
-                            <option value="all" @selected($role === 'all')>Teachers &amp; students</option>
-                            <option value="teacher" @selected($role === 'teacher')>Teachers only</option>
+                            <option value="all" @selected($role === 'all')>Everyone</option>
+                            <option value="workforce" @selected($role === 'workforce')>Staff &amp; teachers</option>
                             <option value="student" @selected($role === 'student')>Students only</option>
                         </select>
                     </div>
@@ -66,11 +66,18 @@
         </div>
     </div>
 
-    @if($role === 'all' || $role === 'teacher')
+    @if($role === 'all' || $role === 'workforce')
         @include('admin.reports.partials.attendance-role-table', [
             'title' => 'Teachers',
             'emptyMessage' => 'No teachers yet.',
             'rows' => $teacherRows,
+            'month' => $month,
+            'showStudentMeta' => false,
+        ])
+        @include('admin.reports.partials.attendance-role-table', [
+            'title' => 'Staff',
+            'emptyMessage' => 'No staff yet.',
+            'rows' => $staffRows,
             'month' => $month,
             'showStudentMeta' => false,
         ])

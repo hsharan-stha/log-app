@@ -44,7 +44,7 @@
         <div class="table-responsive">
             <table class="table table-hover mb-0 align-middle">
                 <thead class="table-light">
-                <tr><th>Roll no.</th><th>Name</th><th>Class</th><th>Email</th><th>Face</th><th></th></tr>
+                <tr><th>Roll no.</th><th>Name</th><th>Class</th><th>Bus</th><th>Email</th><th>Face</th><th></th></tr>
                 </thead>
                 <tbody>
                 @forelse($students as $student)
@@ -52,6 +52,13 @@
                         <td><code>{{ $student->roll_number ?? '—' }}</code></td>
                         <td class="fw-medium">{{ $student->name }}</td>
                         <td>{{ $student->schoolClass?->name ?? '—' }}</td>
+                        <td>
+                            @if($student->rides_bus)
+                                <span class="badge text-bg-info">Bus</span>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
                         <td>{{ $student->email ?? '—' }}</td>
                         <td>
                             @if($student->face_descriptor)
@@ -70,7 +77,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="text-center text-muted py-4">No students found for this filter.</td></tr>
+                    <tr><td colspan="7" class="text-center text-muted py-4">No students found for this filter.</td></tr>
                 @endforelse
                 </tbody>
             </table>

@@ -7,7 +7,7 @@
         @if(($faceRegistrationContext ?? 'admin') === 'self')
             <p class="text-muted small mb-2">Signed in as {{ $staff->name }}</p>
         @else
-            <a href="{{ route('admin.staff.index') }}" class="text-decoration-none small">← Back to staff</a>
+            <a href="{{ $faceBackUrl ?? route('admin.staff.index') }}" class="text-decoration-none small">← {{ $faceBackLabel ?? 'Back to staff' }}</a>
         @endif
         <h1 class="h3 mt-2 mb-0">Register face @if(($faceRegistrationContext ?? 'admin') !== 'self')for {{ $staff->name }} @endif</h1>
         <p class="text-muted mb-0">Center the face in the frame, ensure good lighting, then capture once models finish loading.</p>

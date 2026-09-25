@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>ABIS Attendance Features / 出欠管理機能のご紹介</title>
+  <style>
+    @page {
+      size: 297mm 167mm;
+      margin: 0;
+    }
+
+    :root {
+      --navy: #0f2a44;
+      --teal: #1a7a7a;
+      --teal-soft: #e6f4f4;
+      --ink: #1c2430;
+      --muted: #5b6775;
+      --line: #d7e0e8;
+      --bg: #f4f7fa;
+      --white: #ffffff;
+      --accent: #d97706;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #111;
+      color: var(--ink);
+      font-family: "Helvetica Neue", Helvetica, Arial, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", Meiryo, sans-serif;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .slide {
+      width: 297mm;
+      height: 167mm;
+      page-break-after: always;
+      break-after: page;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg);
+      padding: 12mm 14mm 10mm;
+    }
+    .slide:last-child { page-break-after: auto; }
+
+    .badge {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--teal);
+      font-weight: 700;
+    }
+    .badge span {
+      background: var(--teal-soft);
+      border: 1px solid #b9dddd;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    h1 {
+      margin: 8px 0 4px;
+      font-size: 34px;
+      line-height: 1.15;
+      color: var(--navy);
+      font-weight: 750;
+    }
+    h1 .ja {
+      display: block;
+      margin-top: 4px;
+      font-size: 22px;
+      font-weight: 650;
+      color: #35506b;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      font-size: 26px;
+      color: var(--navy);
+      line-height: 1.2;
+    }
+    h2 .ja {
+      display: block;
+      margin-top: 3px;
+      font-size: 16px;
+      color: #46607a;
+      font-weight: 600;
+    }
+
+    p, li {
+      font-size: 13.5px;
+      line-height: 1.45;
+      color: var(--ink);
+    }
+    .muted { color: var(--muted); }
+    .ja-line {
+      display: block;
+      color: var(--muted);
+      font-size: 12.5px;
+      margin-top: 2px;
+    }
+
+    .footer {
+      position: absolute;
+      left: 14mm;
+      right: 14mm;
+      bottom: 6mm;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      padding-top: 4mm;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 8mm;
+      height: calc(100% - 34mm);
+      align-items: stretch;
+    }
+    .grid-2-equal {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7mm;
+      height: calc(100% - 34mm);
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5mm;
+      margin-top: 4mm;
+    }
+
+    .card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 5mm;
+      box-shadow: 0 8px 24px rgba(15, 42, 68, 0.06);
+    }
+    .card h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      color: var(--navy);
+    }
+    .card h3 .ja {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .shot {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top left;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      box-shadow: 0 10px 28px rgba(15, 42, 68, 0.12);
+    }
+    .shot-fit {
+      object-fit: contain;
+      background: #eef2f6;
+    }
+
+    .illus {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+    }
+
+    ul.features {
+      margin: 4mm 0 0;
+      padding-left: 5mm;
+    }
+    ul.features li { margin-bottom: 3.5mm; }
+
+    .title-slide {
+      background:
+        radial-gradient(circle at 85% 20%, rgba(26,122,122,0.18), transparent 40%),
+        linear-gradient(135deg, #0f2a44 0%, #164864 48%, #1a7a7a 100%);
+      color: white;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 8mm;
+      align-items: center;
+    }
+    .title-slide h1 {
+      color: white;
+      font-size: 38px;
+      margin: 0 0 6px;
+    }
+    .title-slide h1 .ja {
+      color: #d7f1f1;
+      font-size: 24px;
+    }
+    .title-slide p {
+      color: #dce9f2;
+      font-size: 14px;
+      max-width: 42ch;
+    }
+    .title-slide .pill {
+      display: inline-block;
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    .title-slide .footer {
+      color: rgba(255,255,255,0.7);
+      border-top-color: rgba(255,255,255,0.2);
+    }
+
+    .agenda li {
+      list-style: none;
+      margin: 0 0 4mm;
+      padding: 3.5mm 4mm;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      display: grid;
+      grid-template-columns: 10mm 1fr;
+      gap: 3mm;
+      align-items: start;
+    }
+    .agenda .num {
+      width: 8mm;
+      height: 8mm;
+      border-radius: 50%;
+      background: var(--teal-soft);
+      color: var(--teal);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4mm;
+      margin-top: 3mm;
+    }
+    .flow .step {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 4mm;
+      min-height: 34mm;
+    }
+    .flow .step strong {
+      display: block;
+      color: var(--navy);
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+    .flow .step .ja {
+      color: var(--muted);
+      font-size: 11.5px;
+      display: block;
+      margin-bottom: 3mm;
+    }
+    .flow .step p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    table.summary {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      margin-top: 3mm;
+    }
+    table.summary th, table.summary td {
+      padding: 3.2mm 3.5mm;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 12.5px;
+    }
+    table.summary th {
+      background: #eef5f7;
+      color: var(--navy);
+      font-size: 12px;
+    }
+    table.summary tr:last-child td { border-bottom: none; }
+
+    .close-slide {
+      background: linear-gradient(135deg, #0f2a44, #1a7a7a);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .close-slide h1 { color: white; }
+    .close-slide h1 .ja { color: #d7f1f1; }
+    .close-slide p { color: #dce9f2; font-size: 15px; }
+    .close-slide .footer {
+      color: rgba(255,255,255,0.7);
+      border-top-color: rgba(255,255,255,0.2);
+    }
+
+    .intro-name {
+      margin: 2mm 0 1mm;
+      font-size: 30px;
+      color: var(--navy);
+      font-weight: 750;
+      line-height: 1.15;
+    }
+    .intro-role {
+      margin: 0 0 5mm;
+      color: var(--teal);
+      font-size: 14px;
+      font-weight: 650;
+    }
+    .intro-role .ja {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+    .intro-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5mm;
+      height: calc(100% - 42mm);
+    }
+    .intro-grid .card ul {
+      margin: 2mm 0 0;
+      padding-left: 4.5mm;
+    }
+    .intro-grid .card li {
+      margin-bottom: 3mm;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1 Title -->
+  <section class="slide title-slide">
+    <div>
+      <div class="pill">ABIS PORTAL · ATTENDANCE</div>
+      <h1>
+        Face Attendance Features
+        <span class="ja">顔認証による出欠管理機能のご紹介</span>
+      </h1>
+      <p>
+        School &amp; bus kiosks, photo-backed records, admin calendar, and guardian alerts.
+        <span class="ja-line" style="color:#cfe7ea;font-size:13px;margin-top:8px;">
+          学校・バスのキオスク、写真付き記録、管理カレンダー、保護者アラート。
+        </span>
+      </p>
+    </div>
+    <div>
+      <img class="illus" src="assets/hero-face-kiosk.png" alt="Face attendance kiosk">
+    </div>
+    <div class="footer">
+      <span>ABIS Portal</span>
+      <span>1 / 12 · English / 日本語</span>
+    </div>
+  </section>
+
+  <!-- 2 Introduction -->
+  <section class="slide">
+    <div class="badge"><span>Introduction</span><span>自己紹介</span></div>
+    <div class="intro-name">Hari Sharan Shrestha</div>
+    <p class="intro-role">
+      System Engineer · Senmonkyoiku (NAT Test branch office, Chiba)
+      <span class="ja">システムエンジニア · 専門教育（NAT Test 千葉支店）</span>
+    </p>
+    <div class="intro-grid">
+      <div class="card">
+        <h3>Education<span class="ja">学歴</span></h3>
+        <ul class="features">
+          <li>
+            <strong>MSc Data Science and Computational Intelligence · 2024</strong>
+            <span class="ja-line">Coventry University · 2024</span>
+          </li>
+          <li>
+            <strong>BSc (Hons) BCIS · 2019</strong>
+            <span class="ja-line">University of Central Lancashire (UCLan) · 2019</span>
+          </li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Experience<span class="ja">職歴</span></h3>
+        <ul class="features">
+          <li>
+            <strong>System Engineer</strong> — Senmonkyoiku (NAT Test, Chiba)
+            <span class="ja-line">現職 · システムエンジニア（専門教育 / NAT Test 千葉支店）</span>
+          </li>
+          <li>
+            <strong>Software Developer</strong> — InfoDevelopers · 4 years · UniFun · 1.5 years
+            <span class="ja-line">ソフトウェア開発者 · InfoDevelopers（4年）· UniFun（1.5年）</span>
+          </li>
+          <li>
+            <strong>Web Development Teacher</strong> — Softwarica College of IT &amp; E-commerce · 4 years
+            <span class="ja-line">Web開発講師 · Softwarica College · 4年</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer"><span>Presented by Hari Sharan Shrestha</span><span>2 / 12</span></div>
+  </section>
+
+  <!-- 3 Agenda -->
+  <section class="slide">
+    <div class="badge"><span>Overview</span><span>概要</span></div>
+    <h2>What this system covers<span class="ja">本システムの範囲</span></h2>
+    <div class="grid-2">
+      <ol class="agenda" style="margin:0;padding:0;">
+        <li><div class="num">1</div><div><strong>Face check-in / out at kiosk</strong><span class="ja-line">キオスクでの顔認証チェックイン／アウト</span></div></li>
+        <li><div class="num">2</div><div><strong>Bus + school attendance flow</strong><span class="ja-line">バス＋学校の出欠フロー</span></div></li>
+        <li><div class="num">3</div><div><strong>Admin calendar &amp; day search</strong><span class="ja-line">管理者カレンダーと日別検索</span></div></li>
+        <li><div class="num">4</div><div><strong>Registered kiosk devices</strong><span class="ja-line">登録済みキオスク端末管理</span></div></li>
+        <li><div class="num">5</div><div><strong>Guardian portal &amp; alerts</strong><span class="ja-line">保護者ポータルと通知</span></div></li>
+      </ol>
+      <div class="card">
+        <h3>Who uses it?<span class="ja">利用者</span></h3>
+        <ul class="features">
+          <li><strong>Students &amp; teachers</strong><span class="ja-line">児童・生徒／教員 — 顔で出欠</span></li>
+          <li><strong>Attendance operator</strong><span class="ja-line">出欠オペレーター — 端末登録・キオスク運用</span></li>
+          <li><strong>Admin / principal</strong><span class="ja-line">管理者 — カレンダー・日別確認・端末管理</span></li>
+          <li><strong>Guardians</strong><span class="ja-line">保護者 — 本日状況・アラート・カレンダー</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer"><span>ABIS Portal · Attendance</span><span>3 / 12</span></div>
+  </section>
+
+  <!-- 3 Face kiosk -->
+  <section class="slide">
+    <div class="badge"><span>Face kiosk</span><span>顔認証キオスク</span></div>
+    <h2>Touchless check-in with camera<span class="ja">カメラによる非接触チェックイン</span></h2>
+    <div class="grid-2">
+      <div>
+        <img class="illus" src="assets/hero-face-kiosk.png" alt="Kiosk illustration">
+      </div>
+      <div class="card">
+        <ul class="features">
+          <li><strong>Live face match</strong><span class="ja-line">登録済みの顔データとリアルタイム照合</span></li>
+          <li><strong>Photo snapshot saved</strong><span class="ja-line">成功時に証明写真を保存（監査用）</span></li>
+          <li><strong>Students &amp; teachers</strong><span class="ja-line">児童・生徒と教員の両方に対応</span></li>
+          <li><strong>Secure device token</strong><span class="ja-line">登録済み端末のみ利用可能</span></li>
+          <li><strong>School or bus location</strong><span class="ja-line">学校／バスの設置場所を端末ごとに設定</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer"><span>ABIS Portal · Attendance</span><span>4 / 12</span></div>
+  </section>
+
+  <!-- 4 Bus + school flow -->
+  <section class="slide">
+    <div class="badge"><span>Bus + school</span><span>バス＋学校</span></div>
+    <h2>Daily journey for bus riders<span class="ja">バス利用児童の1日の流れ</span></h2>
+    <div style="height:52mm;margin-bottom:4mm;">
+      <img class="illus" src="assets/bus-school-flow.png" alt="Bus and school flow">
+    </div>
+    <div class="flow">
+      <div class="step">
+        <strong>1. Bus in</strong><span class="ja">バス乗車</span>
+        <p>Board bus kiosk → guardians notified</p>
+      </div>
+      <div class="step">
+        <strong>2. School in</strong><span class="ja">登校</span>
+        <p>School gate kiosk after bus check-in</p>
+      </div>
+      <div class="step">
+        <strong>3. School out</strong><span class="ja">下校</span>
+        <p>School checkout before return bus</p>
+      </div>
+      <div class="step">
+        <strong>4. Bus out</strong><span class="ja">バス降車</span>
+        <p>Final bus scan completes the day</p>
+      </div>
+    </div>
+    <div class="footer"><span>Non-bus students use school kiosk only · バス未利用は学校のみ</span><span>5 / 12</span></div>
+  </section>
+
+  <!-- 5 Admin calendar -->
+  <section class="slide">
+    <div class="badge"><span>Admin</span><span>管理者</span></div>
+    <h2>Monthly attendance calendar<span class="ja">月次出欠カレンダー</span></h2>
+    <div class="grid-2">
+      <img class="shot" src="screenshots/02-admin-calendar.png" alt="Admin attendance calendar">
+      <div class="card">
+        <h3>See every day at a glance<span class="ja">1日ごとの状況を一目で</span></h3>
+        <ul class="features">
+          <li><strong>Attend / Unattend counts</strong><span class="ja-line">出席・未出席人数を日付セルに表示</span></li>
+          <li><strong>Teachers &amp; students on roll</strong><span class="ja-line">教員＋児童・生徒を対象</span></li>
+          <li><strong>Click a day for detail</strong><span class="ja-line">日付クリックで写真付き詳細へ</span></li>
+          <li><strong>Month navigation</strong><span class="ja-line">前月／翌月へ簡単に移動</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer"><span>ABIS Portal · Attendance</span><span>6 / 12</span></div>
+  </section>
+
+  <!-- 6 Day detail + search -->
+  <section class="slide">
+    <div class="badge"><span>Day detail</span><span>日別詳細</span></div>
+    <h2>Attended &amp; unattended with search<span class="ja">出席／未出席の一覧と人物検索</span></h2>
+    <div class="grid-2">
+      <img class="shot" src="screenshots/03-admin-day.png" alt="Admin day attendance">
+      <div class="card">
+        <ul class="features">
+          <li><strong>Attended table</strong><span class="ja-line">バス入／学校入／学校出／バス出＋写真</span></li>
+          <li><strong>Unattended list</strong><span class="ja-line">未チェックインの人を右側に表示</span></li>
+          <li><strong>Search by person</strong><span class="ja-line">名前・メールで両リストを絞り込み</span></li>
+          <li><strong>Day totals stay clear</strong><span class="ja-line">検索中も当日の合計人数は維持</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer"><span>ABIS Portal · Attendance</span><span>7 / 12</span></div>
+  </section>
+
+  <!-- 7 Devices -->
+  <section class="slide">
+    <div class="badge"><span>Devices</span><span>端末管理</span></div>
+    <h2>Only trusted tablets can scan<span class="ja">許可したタブレットだけがスキャン可能</span></h2>
+    <div class="grid-2">
+      <img class="shot" src="screenshots/04-admin-devices.png" alt="Kiosk devices">
+      <div class="card">
+        <ul class="features">
+          <li><strong>Register school / bus kiosks</strong><span class="ja-line">学校・バスのキオスクを登録</span></li>
+          <li><strong>Token-bound browsers</strong><span class="ja-line">端末トークンでブラウザを紐付け</span></li>
+          <li><strong>Last seen &amp; status</strong><span class="ja-line">最終利用時刻と稼働状態を確認</span></li>
+          <li><strong>Revoke anytime</strong><span class="ja-line">紛失・入替時はすぐ無効化</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer"><span>ABIS Portal · Attendance</span><span>8 / 12</span></div>
+  </section>
+
+  <!-- 8 Guardian portal -->
+  <section class="slide">
+    <div class="badge"><span>Guardians</span><span>保護者</span></div>
+    <h2>Today’s status &amp; alerts<span class="ja">本日の状況とアラート</span></h2>
+    <div class="grid-2-equal">
+      <img class="shot" src="screenshots/05-guardian-dashboard.png" alt="Guardian dashboard">
+      <div style="display:grid;grid-template-rows:1fr 1fr;gap:5mm;">
+        <img class="illus" src="assets/guardian-alert.png" alt="Guardian notification">
+        <div class="card">
+          <ul class="features" style="margin-top:0;">
+            <li><strong>Live child status</strong><span class="ja-line">バス・学校のチェックイン状況を表示</span></li>
+            <li><strong>Email + in-app alerts</strong><span class="ja-line">メールとポータル内アラート</span></li>
+            <li><strong>Paginated alert history</strong><span class="ja-line">アラート履歴はサーバー側ページング</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>ABIS Portal · Attendance</span><span>9 / 12</span></div>
+  </section>
+
+  <!-- 9 Guardian calendar -->
+  <section class="slide">
+    <div class="badge"><span>Guardian calendar</span><span>保護者カレンダー</span></div>
+    <h2>Month view &amp; day photos<span class="ja">月表示と日別写真確認</span></h2>
+    <div class="grid-2">
+      <img class="shot" src="screenshots/06-guardian-calendar.png" alt="Guardian attendance calendar">
+      <div class="card">
+        <ul class="features">
+          <li><strong>Present / absent by day</strong><span class="ja-line">日ごとの出席・欠席を確認</span></li>
+          <li><strong>Open a day for times &amp; photos</strong><span class="ja-line">日付を開いて時刻と写真を確認</span></li>
+          <li><strong>Per-child selection</strong><span class="ja-line">複数の子どもを切り替えて閲覧</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer"><span>ABIS Portal · Attendance</span><span>10 / 12</span></div>
+  </section>
+
+  <!-- 10 Feature summary -->
+  <section class="slide">
+    <div class="badge"><span>Summary</span><span>まとめ</span></div>
+    <h2>Feature checklist<span class="ja">機能一覧</span></h2>
+    <table class="summary">
+      <thead>
+        <tr>
+          <th>Feature / 機能</th>
+          <th>English</th>
+          <th>日本語</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Face kiosk</strong></td>
+          <td>Camera match + photo capture</td>
+          <td>顔照合＋写真保存</td>
+        </tr>
+        <tr>
+          <td><strong>Bus / school</strong></td>
+          <td>Ordered in/out for bus riders</td>
+          <td>バス利用者の順序付き入退</td>
+        </tr>
+        <tr>
+          <td><strong>Admin calendar</strong></td>
+          <td>Monthly attend / unattend rollup</td>
+          <td>月次の出席・未出席集計</td>
+        </tr>
+        <tr>
+          <td><strong>Day search</strong></td>
+          <td>Filter attended &amp; unattended people</td>
+          <td>出席／未出席の人物検索</td>
+        </tr>
+        <tr>
+          <td><strong>Device control</strong></td>
+          <td>Register / revoke school &amp; bus tablets</td>
+          <td>学校・バスタブレットの登録／取消</td>
+        </tr>
+        <tr>
+          <td><strong>Guardian alerts</strong></td>
+          <td>Notifications + paginated history</td>
+          <td>通知＋ページング付き履歴</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="footer"><span>ABIS Portal · Attendance</span><span>11 / 12</span></div>
+  </section>
+
+  <!-- 11 Close -->
+  <section class="slide close-slide">
+    <div class="pill" style="display:inline-block;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);padding:5px 12px;border-radius:999px;font-size:11px;margin-bottom:10px;">THANK YOU · ご清聴ありがとうございました</div>
+    <h1>
+      Safer, clearer attendance
+      <span class="ja">より安全で、わかりやすい出欠管理を</span>
+    </h1>
+    <p>
+      Face kiosks for school &amp; bus · photo records · admin oversight · guardian peace of mind<br>
+      <span style="opacity:.9;font-size:13.5px;">学校・バスの顔認証キオスク · 写真付き記録 · 管理者の可視化 · 保護者への安心通知</span>
+    </p>
+    <div class="footer">
+      <span>ABIS Portal</span>
+      <span>12 / 12 · English / 日本語</span>
+    </div>
+  </section>
+
+</body>
+</html>

@@ -10,6 +10,7 @@ class KioskDevice extends Model
 {
     protected $fillable = [
         'name',
+        'location',
         'token_hash',
         'token_prefix',
         'registered_by',
@@ -35,6 +36,21 @@ class KioskDevice extends Model
         return $this->revoked_at === null;
     }
 
+    public function isBusKiosk(): bool
+    {
+        return $this->location === 'bus';
+    }
+
+    public function isSchoolKiosk(): bool
+    {
+        return $this->location !== 'bus';
+    }
+
+    public function locationLabel(): string
+    {
+        return $this->isBusKiosk() ? 'Bus' : 'School';
+    }
+
     public function revoke(): void
     {
         $this->forceFill(['revoked_at' => now()])->save();
@@ -48,12 +64,14 @@ class KioskDevice extends Model
     /**
      * @return array{device: self, plain_token: string}
      */
-    public static function register(string $name, ?User $registrar = null): array
+    public static function register(string $name, string $location = 'school', ?User $registrar = null): array
     {
         $plain = Str::random(64);
+        $location = $location === 'bus' ? 'bus' : 'school';
 
         $device = static::query()->create([
             'name' => $name,
+            'location' => $location,
             'token_hash' => hash('sha256', $plain),
             'token_prefix' => substr($plain, 0, 8),
             'registered_by' => $registrar?->id,
@@ -61,6 +79,13 @@ class KioskDevice extends Model
         ]);
 
         return ['device' => $device, 'plain_token' => $plain];
+    }
+
+    public static function active(): ?self
+    {
+        $device = static::query()->whereNull('revoked_at')->latest('id')->first();
+
+        return $device instanceof self ? $device : null;
     }
 
     public static function findActiveByPlainToken(?string $plain): ?self

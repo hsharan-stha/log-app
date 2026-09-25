@@ -31,9 +31,16 @@ use App\Http\Controllers\Student\DashboardController as StudentDashboardControll
 use App\Http\Controllers\Teacher\CourseController as TeacherCourseController;
 use App\Http\Controllers\Teacher\DashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\PortalController as TeacherPortalController;
+use App\Http\Middleware\EnsureKioskDevice;
+use App\Models\KioskDevice;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
+    $device = KioskDevice::findActiveByPlainToken(request()->cookie(EnsureKioskDevice::COOKIE));
+    if ($device !== null) {
+        return redirect()->route('attendance.scan');
+    }
+
     if (auth()->check()) {
         return redirect()->route(auth()->user()->homeRoute());
     }
@@ -50,7 +57,7 @@ Route::middleware(['auth', 'attendance'])->group(function () {
     Route::post('/attendance/setup', [KioskSetupController::class, 'store'])->name('attendance.setup.store');
 });
 
-Route::middleware(['auth', 'attendance', 'kiosk'])->group(function () {
+Route::middleware(['kiosk'])->group(function () {
     Route::get('/attendance', [FaceAttendanceController::class, 'show'])->name('attendance.scan');
     Route::post('/attendance/verify', [FaceAttendanceController::class, 'verify'])
         ->middleware('throttle:120,1')
@@ -59,10 +66,6 @@ Route::middleware(['auth', 'attendance', 'kiosk'])->group(function () {
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
-    Route::get('/attendance/day/{date}', [AttendanceController::class, 'day'])
-        ->where('date', '\d{4}-\d{2}-\d{2}')
-        ->name('attendance.day');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/billing', [ReportController::class, 'billing'])->name('reports.billing');
     Route::get('/reports/attendance', [AttendanceReportController::class, 'monthly'])->name('reports.attendance');
@@ -71,20 +74,34 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/reports/attendance/staff/{staff}', [AttendanceReportController::class, 'staffMonthly'])
         ->name('reports.attendance.staff');
 
-    Route::get('devices', [KioskDeviceController::class, 'index'])->name('devices.index');
-    Route::post('devices/{device}/revoke', [KioskDeviceController::class, 'revoke'])->name('devices.revoke');
-
     Route::get('notices', [AdminNoticeController::class, 'index'])->name('notices.index');
     Route::get('notices/create', [AdminNoticeController::class, 'create'])->name('notices.create');
     Route::post('notices', [AdminNoticeController::class, 'store'])->name('notices.store');
     Route::delete('notices/{notice}', [AdminNoticeController::class, 'destroy'])->name('notices.destroy');
 
-    Route::resource('office-users', OfficeUserController::class)
-        ->except(['show', 'destroy'])
-        ->parameters(['office-users' => 'officeUser']);
+    Route::post('devices/{device}/revoke', [KioskDeviceController::class, 'revoke'])->name('devices.revoke');
 });
 
 Route::middleware(['auth', 'role:admin,hr'])->prefix('admin')->name('admin.')->group(function () {
+    Route::redirect('/attendance', '/admin/attendance/staff');
+    Route::get('/attendance/day/{date}', function (string $date) {
+        return redirect()->route('admin.attendance.day', ['group' => 'staff', 'date' => $date]);
+    })->where('date', '\d{4}-\d{2}-\d{2}');
+    Route::get('/attendance/{group}', [AttendanceController::class, 'index'])
+        ->where('group', 'staff|students')
+        ->name('attendance.index');
+    Route::get('/attendance/{group}/day/{date}', [AttendanceController::class, 'day'])
+        ->where(['group' => 'staff|students', 'date' => '\d{4}-\d{2}-\d{2}'])
+        ->name('attendance.day');
+
+    Route::get('devices', [KioskDeviceController::class, 'index'])->name('devices.index');
+
+    Route::get('office-users/{officeUser}/register-face', [OfficeUserController::class, 'registerFace'])->name('office-users.register-face');
+    Route::post('office-users/{officeUser}/register-face', [OfficeUserController::class, 'storeFaceDescriptor'])->name('office-users.register-face.store');
+    Route::resource('office-users', OfficeUserController::class)
+        ->except(['show', 'destroy'])
+        ->parameters(['office-users' => 'officeUser']);
+
     Route::get('/academics', [AcademicSetupController::class, 'index'])->name('academics.index');
     Route::get('/people', [PeopleSetupController::class, 'index'])->name('people.index');
 
@@ -118,6 +135,11 @@ Route::middleware(['auth', 'role:admin,finance'])->prefix('finance')->name('fina
 
 Route::middleware(['auth', 'role:staff,other'])->prefix('office')->name('office.')->group(function () {
     Route::get('/', [OfficeDashboardController::class, 'index'])->name('dashboard');
+});
+
+Route::middleware(['auth', 'role:hr,finance,staff,other,attendance'])->group(function () {
+    Route::get('/office/face', [OfficeDashboardController::class, 'registerFace'])->name('office.face');
+    Route::post('/office/face', [OfficeDashboardController::class, 'storeFace'])->name('office.face.store');
 });
 
 Route::middleware(['auth', 'teacher'])->prefix('teacher')->name('teacher.')->group(function () {

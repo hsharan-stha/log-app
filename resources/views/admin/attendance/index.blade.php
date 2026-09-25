@@ -1,22 +1,22 @@
 @extends('layouts.admin')
 
-@section('title', 'Attendance calendar')
+@section('title', $groupLabel.' calendar')
 
 @section('content')
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
         <div>
-            <h1 class="h3 mb-1">Attendance calendar</h1>
+            <h1 class="h3 mb-1">{{ $groupLabel }} calendar</h1>
             <p class="text-muted mb-0">
-                Teachers &amp; students · {{ $eligibleTotal }} people on roll.
+                {{ $groupLabel }} · {{ $eligibleTotal }} people on roll.
                 Click a day for photos and absences.
             </p>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <a class="btn btn-outline-secondary" href="{{ route('admin.attendance.index', ['month' => $prevMonth]) }}">← Prev</a>
-            <form method="GET" action="{{ route('admin.attendance.index') }}" class="d-flex gap-2">
+            <a class="btn btn-outline-secondary" href="{{ route('admin.attendance.index', ['group' => $group, 'month' => $prevMonth]) }}">← Prev</a>
+            <form method="GET" action="{{ route('admin.attendance.index', $group) }}" class="d-flex gap-2">
                 <input type="month" name="month" value="{{ $month }}" class="form-control" style="width: 11rem;" onchange="this.form.submit()">
             </form>
-            <a class="btn btn-outline-secondary" href="{{ route('admin.attendance.index', ['month' => $nextMonth]) }}">Next →</a>
+            <a class="btn btn-outline-secondary" href="{{ route('admin.attendance.index', ['group' => $group, 'month' => $nextMonth]) }}">Next →</a>
         </div>
     </div>
 
@@ -38,7 +38,7 @@
                             <td class="p-0 {{ $cell['inMonth'] ? '' : 'bg-light' }} {{ $cell['isToday'] ? 'today-cell' : '' }}"
                                 style="height: 110px; min-width: 110px; vertical-align: top;">
                                 @if($cell['inMonth'] && $cell['date'])
-                                    <a href="{{ route('admin.attendance.day', $cell['date']) }}"
+                                    <a href="{{ route('admin.attendance.day', ['group' => $group, 'date' => $cell['date']]) }}"
                                        class="d-block h-100 text-decoration-none text-dark p-2 calendar-day-link">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <span class="fw-semibold {{ $cell['isToday'] ? 'text-primary' : '' }}">{{ $cell['day'] }}</span>
@@ -67,7 +67,7 @@
 
     <p class="small text-muted mb-0">
         <span class="text-success fw-semibold">Attend</span> = checked in that day ·
-        <span class="text-danger fw-semibold">Unattend</span> = no check-in among teachers &amp; students.
+        <span class="text-danger fw-semibold">Unattend</span> = no check-in among {{ strtolower($groupLabel) }}.
     </p>
 @endsection
 

@@ -13,6 +13,8 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
+    /** Teachers plus every office-user role. School check-in/out only. */
+    public const FACE_STAFF_ROLES = ['teacher', 'hr', 'finance', 'staff', 'other', 'attendance'];
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
@@ -27,6 +29,7 @@ class User extends Authenticatable
         'role',
         'class_id',
         'roll_number',
+        'rides_bus',
         'face_descriptor',
     ];
 
@@ -45,6 +48,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'face_descriptor' => 'array',
+            'rides_bus' => 'boolean',
         ];
     }
 
@@ -111,7 +115,7 @@ class User extends Authenticatable
 
     public function canUseFaceAttendance(): bool
     {
-        return $this->isTeacher() || $this->isStudent();
+        return $this->isStudent() || in_array($this->role, self::FACE_STAFF_ROLES, true);
     }
 
     public function schoolClass(): BelongsTo

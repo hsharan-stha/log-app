@@ -15,6 +15,10 @@ class Attendance extends Model
         'checkout_time',
         'checkin_photo_path',
         'checkout_photo_path',
+        'bus_checkin_time',
+        'bus_checkout_time',
+        'bus_checkin_photo_path',
+        'bus_checkout_photo_path',
     ];
 
     /**
@@ -26,6 +30,8 @@ class Attendance extends Model
             'attendance_date' => 'date',
             'checkin_time' => 'datetime',
             'checkout_time' => 'datetime',
+            'bus_checkin_time' => 'datetime',
+            'bus_checkout_time' => 'datetime',
         ];
     }
 
@@ -42,6 +48,16 @@ class Attendance extends Model
     public function checkoutPhotoUrl(): ?string
     {
         return $this->photoPublicUrl($this->checkout_photo_path);
+    }
+
+    public function busCheckinPhotoUrl(): ?string
+    {
+        return $this->photoPublicUrl($this->bus_checkin_photo_path);
+    }
+
+    public function busCheckoutPhotoUrl(): ?string
+    {
+        return $this->photoPublicUrl($this->bus_checkout_photo_path);
     }
 
     private function photoPublicUrl(?string $path): ?string
