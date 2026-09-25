@@ -267,11 +267,50 @@
         .admin-shell__main {
             flex: 1 1 auto;
             min-width: 0;
+            min-height: 0;
             height: 100%;
             overflow-y: auto;
             overflow-x: hidden;
             -webkit-overflow-scrolling: touch;
             background: #f8fafc;
+        }
+        @media (max-width: 767.98px) {
+            .admin-shell {
+                flex-direction: column;
+                height: 100dvh;
+                max-height: 100dvh;
+            }
+            .admin-shell__sidebar {
+                width: 100%;
+                height: auto;
+            }
+            .admin-shell__sidebar-inner { height: auto; }
+            .admin-shell__brand { padding: 0.65rem 0.85rem; }
+            .admin-shell__sidebar-nav {
+                display: flex;
+                flex: 0 0 auto;
+                gap: 0.35rem;
+                overflow-x: auto;
+                padding: 0.45rem 0.65rem;
+            }
+            .admin-nav-link {
+                white-space: nowrap;
+                margin-bottom: 0;
+                padding: 0.45rem 0.7rem;
+            }
+            .admin-shell__footer {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.45rem 0.7rem 0.55rem;
+            }
+            .admin-shell__user { margin-bottom: 0; flex: 1 1 auto; }
+            .admin-shell__logout { width: auto; flex: 0 0 auto; }
+            .admin-shell__main { height: auto; }
+        }
+        @media (min-width: 768px) and (max-width: 1199.98px) {
+            .admin-shell__sidebar { width: 220px; }
+        }
         }
         .academic-step-card { border-radius: 1rem; }
     </style>

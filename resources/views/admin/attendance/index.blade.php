@@ -11,10 +11,10 @@
                 Click a day for photos and absences.
             </p>
         </div>
-        <div class="d-flex align-items-center gap-2">
+        <div class="calendar-nav d-flex align-items-center gap-2">
             <a class="btn btn-outline-secondary" href="{{ route('admin.attendance.index', ['group' => $group, 'month' => $prevMonth]) }}">← Prev</a>
             <form method="GET" action="{{ route('admin.attendance.index', $group) }}" class="d-flex gap-2">
-                <input type="month" name="month" value="{{ $month }}" class="form-control" style="width: 11rem;" onchange="this.form.submit()">
+                <input type="month" name="month" value="{{ $month }}" class="form-control calendar-month" onchange="this.form.submit()">
             </form>
             <a class="btn btn-outline-secondary" href="{{ route('admin.attendance.index', ['group' => $group, 'month' => $nextMonth]) }}">Next →</a>
         </div>
@@ -35,8 +35,7 @@
                 @foreach($weeks as $week)
                     <tr>
                         @foreach($week as $cell)
-                            <td class="p-0 {{ $cell['inMonth'] ? '' : 'bg-light' }} {{ $cell['isToday'] ? 'today-cell' : '' }}"
-                                style="height: 110px; min-width: 110px; vertical-align: top;">
+                            <td class="p-0 calendar-cell {{ $cell['inMonth'] ? '' : 'bg-light' }} {{ $cell['isToday'] ? 'today-cell' : '' }}">
                                 @if($cell['inMonth'] && $cell['date'])
                                     <a href="{{ route('admin.attendance.day', ['group' => $group, 'date' => $cell['date']]) }}"
                                        class="d-block h-100 text-decoration-none text-dark p-2 calendar-day-link">
@@ -49,9 +48,9 @@
                                         @if($cell['isFuture'])
                                             <div class="small text-muted mt-3">—</div>
                                         @else
-                                            <div class="mt-2 small">
-                                                <div class="text-success fw-semibold">Attend {{ $cell['present'] }}</div>
-                                                <div class="text-danger">Unattend {{ $cell['absent'] }}</div>
+                                            <div class="mt-1 mt-md-2 small calendar-counts">
+                                                <div class="text-success fw-semibold"><span class="cal-word">Attend </span>{{ $cell['present'] }}</div>
+                                                <div class="text-danger"><span class="cal-word">Unattend </span>{{ $cell['absent'] }}</div>
                                             </div>
                                         @endif
                                     </a>
@@ -78,6 +77,23 @@
     }
     .attendance-calendar .today-cell {
         box-shadow: inset 0 0 0 2px rgba(13, 110, 253, 0.45);
+    }
+    .calendar-month { width: 11rem; }
+    .calendar-cell { height: 110px; min-width: 0; vertical-align: top; }
+    @media (max-width: 767.98px) {
+        .calendar-nav { width: 100%; }
+        .calendar-nav form { flex: 1 1 auto; }
+        .calendar-month { width: 100%; }
+        .calendar-cell { height: 72px; }
+        .calendar-cell .calendar-day-link { padding: 0.3rem !important; }
+        .cal-word, .calendar-cell .badge { display: none; }
+        .calendar-counts { font-size: 0.68rem; line-height: 1.15; }
+    }
+    @media (min-width: 768px) and (max-width: 1199.98px) {
+        .calendar-cell { height: 96px; }
+    }
+    @media (min-width: 1400px) {
+        .calendar-cell { height: 132px; }
     }
 </style>
 @endpush

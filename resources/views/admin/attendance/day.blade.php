@@ -18,7 +18,7 @@
     <form method="GET" action="{{ route('admin.attendance.day', ['group' => $group, 'date' => $date]) }}" class="mb-4 d-flex flex-wrap align-items-end gap-2">
         <div>
             <label class="form-label mb-1" for="q">Search person</label>
-            <input id="q" name="q" type="search" class="form-control" style="min-width: 240px;"
+            <input id="q" name="q" type="search" class="form-control day-search"
                    value="{{ $q }}" placeholder="Name or email" autofocus>
         </div>
         <button class="btn btn-primary" type="submit">Search</button>
@@ -178,3 +178,12 @@
         </div>
     </div>
 @endsection
+
+@push('styles')
+<style>
+    .day-search { width: min(100%, 280px); min-width: 0; }
+    @media (max-width: 767.98px) {
+        .day-search { width: 100%; }
+    }
+</style>
+@endpush

@@ -124,6 +124,37 @@
         }
         .kot-auth { font-size: 0.75rem; opacity: 0.9; }
         .kot-auth a, .kot-auth button { color: #fff; }
+        @media (max-width: 767.98px) {
+            .kot-top { padding: 0.65rem 0.75rem; gap: 0.5rem; }
+            .kot-mark { width: 34px; height: 34px; font-size: 0.8rem; }
+            .kot-product { font-size: 0.92rem; }
+            .kot-place { font-size: 0.68rem; }
+            .kot-date { font-size: 0.68rem; }
+            .kot-time { font-size: clamp(1.35rem, 7vw, 1.8rem); }
+            .kot-main { padding: 0.55rem 0.55rem 0.35rem; gap: 0.45rem; }
+            .attendance-kiosk__video-wrap { border-width: 3px; border-radius: 14px; }
+            .kot-guide { display: none; }
+            .kot-status { font-size: 0.95rem; }
+            .kot-result { font-size: 0.9rem; padding: 0.5rem 0.7rem; }
+            .kot-foot { font-size: 0.68rem; }
+        }
+        @media (min-width: 768px) and (max-width: 1199.98px) {
+            .kot-stage { width: min(720px, 100%); }
+            .kot-guide { inset: 8% 24%; }
+            .kot-time { font-size: clamp(2.2rem, 4.5vw, 2.8rem); }
+        }
+        @media (min-width: 1200px) {
+            .kot-top { padding: 1.1rem 1.75rem; }
+            .kot-stage, .kot-result { width: min(1100px, 100%); }
+            .kot-time { font-size: 3.4rem; }
+            .kot-status { font-size: 1.35rem; }
+            .kot-guide { inset: 7% 28%; }
+        }
+        @media (max-width: 767.98px) and (orientation: landscape) {
+            .kot-main { flex-direction: row; flex-wrap: wrap; align-items: stretch; }
+            .kot-stage { width: 58%; flex: 1 1 58%; }
+            .kot-status, .kot-result, #btn-start { width: min(38%, 16rem); align-self: center; }
+        }
     </style>
 </head>
 <body class="kot-kiosk">
