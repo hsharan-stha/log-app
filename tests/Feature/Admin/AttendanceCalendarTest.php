@@ -31,6 +31,13 @@ class AttendanceCalendarTest extends TestCase
             'checkin_time' => now(),
         ]);
 
+        $operator = User::factory()->create(['role' => 'attendance', 'name' => 'Kiosk Operator']);
+        Attendance::query()->create([
+            'user_id' => $operator->id,
+            'attendance_date' => now()->toDateString(),
+            'checkin_time' => now(),
+        ]);
+
         $this->actingAs($admin)
             ->get(route('admin.attendance.index', 'staff'))
             ->assertOk()
@@ -42,6 +49,7 @@ class AttendanceCalendarTest extends TestCase
             ->assertOk()
             ->assertSee('Present Teacher')
             ->assertSee('Present Staff')
+            ->assertDontSee('Kiosk Operator')
             ->assertDontSee('Absent Student')
             ->assertSee('Attended')
             ->assertSee('Unattended');

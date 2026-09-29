@@ -15,6 +15,9 @@ class User extends Authenticatable
 {
     /** Teachers plus every office-user role. School check-in/out only. */
     public const FACE_STAFF_ROLES = ['teacher', 'hr', 'finance', 'staff', 'other', 'attendance'];
+
+    /** Staff calendar only. Attendance accounts log into the kiosk and are not tracked here. */
+    public const CALENDAR_STAFF_ROLES = ['teacher', 'hr', 'finance', 'staff', 'other'];
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 

@@ -14,7 +14,7 @@ class AttendanceController extends Controller
 {
     /** @var array<string, list<string>> */
     private const GROUPS = [
-        'staff' => User::FACE_STAFF_ROLES,
+        'staff' => User::CALENDAR_STAFF_ROLES,
         'students' => ['student'],
     ];
 
