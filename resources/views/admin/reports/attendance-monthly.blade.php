@@ -17,7 +17,9 @@
         };
     @endphp
 
-    @include('admin.partials.reports-flow', ['current' => $flowCurrent])
+    @if($reportKind !== 'workforce')
+        @include('admin.partials.reports-flow', ['current' => $flowCurrent])
+    @endif
 
     <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
         <div>

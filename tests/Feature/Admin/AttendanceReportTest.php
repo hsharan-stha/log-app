@@ -21,6 +21,8 @@ class AttendanceReportTest extends TestCase
             ->assertOk()
             ->assertSee('Staff report')
             ->assertSee('Office Staff')
-            ->assertDontSee('Kiosk Operator');
+            ->assertDontSee('Kiosk Operator')
+            ->assertDontSee('Reports hub')
+            ->assertDontSee('Student attendance');
     }
 }

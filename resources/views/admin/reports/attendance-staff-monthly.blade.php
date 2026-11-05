@@ -3,9 +3,11 @@
 @section('title', ($staff->isStudent() ? 'Student' : ($staff->isOfficeStaff() ? 'Staff' : 'Teacher')).' monthly attendance')
 
 @section('content')
-    @include('admin.partials.reports-flow', [
-        'current' => $staff->isStudent() ? 'students' : 'teachers',
-    ])
+    @if($staff->isStudent())
+        @include('admin.partials.reports-flow', [
+            'current' => 'students',
+        ])
+    @endif
 
     <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
         <div>
