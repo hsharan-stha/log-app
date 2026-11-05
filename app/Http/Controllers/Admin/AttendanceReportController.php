@@ -58,8 +58,9 @@ class AttendanceReportController extends Controller
             ];
         };
 
+        $reportStaffRoles = array_values(array_diff(OfficeUserController::ROLES, ['attendance']));
         $teacherRows = $people->where('role', 'teacher')->values()->map($mapRow);
-        $staffRows = $people->whereIn('role', OfficeUserController::ROLES)->values()->map($mapRow);
+        $staffRows = $people->whereIn('role', $reportStaffRoles)->values()->map($mapRow);
         $studentRows = $people->where('role', 'student')->values()->map($mapRow);
 
         $role = $request->query('role', 'all');
@@ -216,6 +217,6 @@ class AttendanceReportController extends Controller
 
     private function ensureStaff(User $user): void
     {
-        abort_unless(in_array($user->role, array_merge(User::FACE_STAFF_ROLES, ['student']), true), 404);
+        abort_unless(in_array($user->role, array_merge(User::CALENDAR_STAFF_ROLES, ['student']), true), 404);
     }
 }

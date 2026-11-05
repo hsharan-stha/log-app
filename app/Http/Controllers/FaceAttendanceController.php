@@ -6,6 +6,7 @@ use App\Models\Attendance;
 use App\Models\KioskDevice;
 use App\Models\User;
 use App\Notifications\StudentAttendanceAlert;
+use Carbon\CarbonInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -90,6 +91,10 @@ class FaceAttendanceController extends Controller
         }
 
         if ($attendance->checkout_time === null) {
+            if ($tooSoon = $this->checkoutTooSoon($attendance->checkin_time, $user)) {
+                return $tooSoon;
+            }
+
             return $this->saveAndRespond(
                 $attendance,
                 $user,
@@ -146,6 +151,10 @@ class FaceAttendanceController extends Controller
         }
 
         if ($attendance->bus_checkout_time === null) {
+            if ($tooSoon = $this->checkoutTooSoon($attendance->bus_checkin_time, $user)) {
+                return $tooSoon;
+            }
+
             return $this->saveAndRespond(
                 $attendance,
                 $user,
@@ -184,6 +193,10 @@ class FaceAttendanceController extends Controller
         }
 
         if ($attendance->checkout_time === null) {
+            if ($tooSoon = $this->checkoutTooSoon($attendance->checkin_time, $user)) {
+                return $tooSoon;
+            }
+
             return $this->saveAndRespond(
                 $attendance,
                 $user,
@@ -257,6 +270,25 @@ class FaceAttendanceController extends Controller
             'role' => $user->role,
             'action' => $action,
         ]);
+    }
+
+    private function checkoutTooSoon(?CarbonInterface $checkin, User $user): ?JsonResponse
+    {
+        if ($checkin === null) {
+            return null;
+        }
+
+        $earliest = $checkin->copy()->addHour();
+        if (now()->greaterThanOrEqualTo($earliest)) {
+            return null;
+        }
+
+        return response()->json([
+            'ok' => false,
+            'message' => 'Check-out is too close to check-in. You can check out after '.$earliest->format('H:i').'.',
+            'person_name' => $user->name,
+            'role' => $user->role,
+        ], 422);
     }
 
     private function alreadyDone(User $user): JsonResponse

@@ -461,6 +461,13 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M8 3.5V7M16 3.5V7M3.5 10h17"/></svg>
                         Staff calendar
                     </a>
+                    @if($isAdmin)
+                    <a class="admin-nav-link {{ request()->routeIs('admin.reports.attendance.teachers') || (request()->routeIs('admin.reports.attendance.staff') && ! request()->route('staff')?->isStudent()) ? 'is-active' : '' }}"
+                       href="{{ route('admin.reports.attendance.teachers') }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 19V9M10 19V5M15 19v-7M20 19V8"/></svg>
+                        Staff report
+                    </a>
+                    @endif
                     <a class="admin-nav-link {{ request()->routeIs('admin.devices.*') ? 'is-active' : '' }}"
                        href="{{ route('admin.devices.index') }}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M11 17h2"/></svg>

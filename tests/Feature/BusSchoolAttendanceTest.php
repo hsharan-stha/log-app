@@ -53,6 +53,8 @@ class BusSchoolAttendanceTest extends TestCase
             ->assertOk()
             ->assertJson(['action' => 'school_checkin']);
 
+        $this->travel(61)->minutes();
+
         $this->verifyAs($operator, $schoolToken, $student)
             ->assertOk()
             ->assertJson(['action' => 'school_checkout']);
@@ -101,6 +103,8 @@ class BusSchoolAttendanceTest extends TestCase
                 ->assertOk()
                 ->assertJson(['action' => 'school_checkin', 'role' => $role]);
 
+            $this->travel(61)->minutes();
+
             $this->verifyAs($operator, $schoolToken, $person)
                 ->assertOk()
                 ->assertJson(['action' => 'school_checkout', 'role' => $role]);
@@ -114,6 +118,34 @@ class BusSchoolAttendanceTest extends TestCase
 
         Notification::assertNothingSent();
         $this->assertFalse($guardian->notifications()->exists());
+    }
+
+    public function test_checkout_within_one_hour_of_checkin_is_rejected(): void
+    {
+        [$operator, $schoolToken, $student] = $this->setupOperatorAndStudent(ridesBus: false);
+        $this->freezeTime();
+
+        $this->verifyAs($operator, $schoolToken, $student)
+            ->assertOk()
+            ->assertJson(['action' => 'school_checkin']);
+
+        $this->travel(59)->minutes();
+
+        $earliest = now()->addMinute()->format('H:i');
+
+        $this->verifyAs($operator, $schoolToken, $student)
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'message' => 'Check-out is too close to check-in. You can check out after '.$earliest.'.',
+            ]);
+
+        $this->assertNull(Attendance::query()->where('user_id', $student->id)->first()?->checkout_time);
+
+        $this->travel(1)->minutes();
+
+        $this->verifyAs($operator, $schoolToken, $student)
+            ->assertOk()
+            ->assertJson(['action' => 'school_checkout']);
     }
 
     public function test_non_bus_student_rejected_at_bus_kiosk(): void
