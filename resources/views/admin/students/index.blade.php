@@ -14,7 +14,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 mb-0">Students</h1>
-            <p class="text-muted mb-0">Add students with class and roll number, then link guardians.</p>
+            <p class="text-muted mb-0">Add students, then use Face to register them for kiosk attendance.</p>
         </div>
     </div>
 

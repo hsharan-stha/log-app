@@ -6,7 +6,7 @@
     <div class="people-head">
         <div>
             <h1>Kiosk devices</h1>
-            <p>Only one kiosk can be active. An admin must revoke it before another tablet can register.</p>
+            <p>One teacher kiosk and two student kiosks (school and bus) can be active. Revoke a device before another tablet can take that place.</p>
         </div>
     </div>
     <div class="card people-table-card">
@@ -14,6 +14,7 @@
             <thead>
             <tr>
                 <th>Name</th>
+                <th>For</th>
                 <th>Location</th>
                 <th>Token</th>
                 <th>Registered by</th>
@@ -26,6 +27,7 @@
             @forelse($devices as $device)
                 <tr>
                     <td data-label="Name" class="fw-medium">{{ $device->name }}</td>
+                    <td data-label="For">{{ $device->audienceLabel() }}</td>
                     <td data-label="Location">
                         <span class="badge {{ $device->isBusKiosk() ? 'text-bg-warning' : 'text-bg-primary' }}">
                             {{ $device->locationLabel() }}
@@ -53,7 +55,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="7" class="text-center text-muted py-4">No devices yet.</td></tr>
+                <tr><td colspan="8" class="text-center text-muted py-4">No devices yet.</td></tr>
             @endforelse
             </tbody>
         </table>

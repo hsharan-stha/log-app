@@ -70,6 +70,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/reports/billing', [ReportController::class, 'billing'])->name('reports.billing');
     Route::get('/reports/attendance', [AttendanceReportController::class, 'monthly'])->name('reports.attendance');
     Route::get('/reports/attendance/teachers', [AttendanceReportController::class, 'teachers'])->name('reports.attendance.teachers');
+    Route::get('/reports/attendance/teachers/export', [AttendanceReportController::class, 'exportTeachers'])->name('reports.attendance.teachers.export');
     Route::get('/reports/attendance/students', [AttendanceReportController::class, 'students'])->name('reports.attendance.students');
     Route::get('/reports/attendance/staff/{staff}', [AttendanceReportController::class, 'staffMonthly'])
         ->name('reports.attendance.staff');
@@ -101,6 +102,9 @@ Route::middleware(['auth', 'role:admin,hr'])->prefix('admin')->name('admin.')->g
     Route::resource('office-users', OfficeUserController::class)
         ->except(['show'])
         ->parameters(['office-users' => 'officeUser']);
+    Route::resource('device-logins', OfficeUserController::class)
+        ->except(['show'])
+        ->parameters(['device-logins' => 'officeUser']);
 
     Route::get('/academics', [AcademicSetupController::class, 'index'])->name('academics.index');
     Route::get('/people', [PeopleSetupController::class, 'index'])->name('people.index');

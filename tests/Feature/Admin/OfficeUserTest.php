@@ -69,4 +69,53 @@ class OfficeUserTest extends TestCase
 
         $this->assertDatabaseHas('users', ['id' => $hr->id]);
     }
+
+    public function test_staff_users_hide_attendance_accounts_and_device_login_creates_them(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        User::factory()->create([
+            'role' => 'attendance',
+            'name' => 'Kiosk Operator',
+            'email' => 'kiosk@school.test',
+        ]);
+        User::factory()->create([
+            'role' => 'staff',
+            'name' => 'Office Staff',
+            'email' => 'office@school.test',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.office-users.index'))
+            ->assertOk()
+            ->assertSee('Office Staff')
+            ->assertDontSee('Kiosk Operator')
+            ->assertDontSee('value="attendance"', false);
+
+        $this->actingAs($admin)
+            ->get(route('admin.device-logins.index'))
+            ->assertOk()
+            ->assertSee('Kiosk Operator')
+            ->assertDontSee('Office Staff');
+
+        $this->actingAs($admin)
+            ->post(route('admin.device-logins.store'), [
+                'name' => 'Gate Tablet Login',
+                'email' => 'gate@school.test',
+                'role' => 'staff',
+            ])
+            ->assertRedirect(route('admin.device-logins.index'));
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'gate@school.test',
+            'role' => 'attendance',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.office-users.store'), [
+                'name' => 'Wrong Role',
+                'email' => 'wrong@school.test',
+                'role' => 'attendance',
+            ])
+            ->assertSessionHasErrors('role');
+    }
 }

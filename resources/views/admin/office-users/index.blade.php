@@ -1,19 +1,19 @@
 @extends('layouts.admin')
 
-@section('title', 'Staff users')
+@section('title', $pageTitle)
 
 @section('content')
     <div class="people-head">
         <div>
-            <h1>Staff users</h1>
-            <p>HR, finance, attendance, staff, and other non-teaching accounts.</p>
+            <h1>{{ $pageTitle }}</h1>
+            <p>{{ $pageBlurb }}</p>
         </div>
         <div class="people-head__actions">
-            <a href="{{ route('admin.office-users.create') }}" class="btn btn-primary">Add staff user</a>
+            <a href="{{ route($routePrefix.'.create') }}" class="btn btn-primary">{{ $deviceLogin ? 'Add device login' : 'Add staff user' }}</a>
         </div>
     </div>
 
-    <form method="GET" action="{{ route('admin.office-users.index') }}" class="card people-filters">
+    <form method="GET" action="{{ route($routePrefix.'.index') }}" class="card people-filters">
         <div class="card-body">
             <div class="people-filters__grid">
                 <div>
@@ -24,6 +24,7 @@
                     <label class="form-label" for="email">Email</label>
                     <input id="email" name="email" type="search" class="form-control" value="{{ $email }}" placeholder="Search by email">
                 </div>
+                @unless($deviceLogin)
                 <div>
                     <label class="form-label" for="role">Role</label>
                     <select id="role" name="role" class="form-select">
@@ -33,10 +34,11 @@
                         @endforeach
                     </select>
                 </div>
+                @endunless
                 <div class="people-filters__actions">
                     <button class="btn btn-primary" type="submit">Search</button>
-                    @if($name !== '' || $email !== '' || $role !== '')
-                        <a href="{{ route('admin.office-users.index') }}" class="btn btn-outline-secondary">Clear</a>
+                    @if($name !== '' || $email !== '' || (! $deviceLogin && $role !== ''))
+                        <a href="{{ route($routePrefix.'.index') }}" class="btn btn-outline-secondary">Clear</a>
                     @endif
                 </div>
             </div>
@@ -49,8 +51,10 @@
             <tr>
                 <th>Name</th>
                 <th>Email</th>
-                <th>Role</th>
-                <th>Face</th>
+                @unless($deviceLogin)
+                    <th>Role</th>
+                    <th>Face</th>
+                @endunless
                 <th class="text-end">Actions</th>
             </tr>
             </thead>
@@ -64,6 +68,7 @@
                         </div>
                     </td>
                     <td data-label="Email">{{ $user->email }}</td>
+                    @unless($deviceLogin)
                     <td data-label="Role"><span class="badge text-bg-secondary">{{ $user->roleLabel() }}</span></td>
                     <td data-label="Face">
                         @if($user->face_descriptor)
@@ -72,12 +77,15 @@
                             <span class="badge text-bg-warning text-dark">Not registered</span>
                         @endif
                     </td>
+                    @endunless
                     <td class="people-actions-cell">
                         <div class="people-actions">
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.office-users.edit', $user) }}">Edit</a>
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ route($routePrefix.'.edit', $user) }}">Edit</a>
+                            @unless($deviceLogin)
                             <a class="btn btn-sm btn-outline-primary" href="{{ route('admin.office-users.register-face', $user) }}">Face</a>
+                            @endunless
                             @unless($user->is(auth()->user()))
-                                <form method="POST" action="{{ route('admin.office-users.destroy', $user) }}" onsubmit="return confirm('Delete this staff user?');">
+                                <form method="POST" action="{{ route($routePrefix.'.destroy', $user) }}" onsubmit="return confirm('{{ $deviceLogin ? 'Delete this device login?' : 'Delete this staff user?' }}');">
                                     @csrf
                                     @method('DELETE')
                                     <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
@@ -88,7 +96,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="text-center text-muted py-4">No staff users found.</td>
+                    <td colspan="{{ $deviceLogin ? 3 : 5 }}" class="text-center text-muted py-4">{{ $deviceLogin ? 'No device logins found.' : 'No staff users found.' }}</td>
                 </tr>
             @endforelse
             </tbody>

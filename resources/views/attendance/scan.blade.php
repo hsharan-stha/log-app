@@ -162,7 +162,17 @@
     <div class="kot-brand">
         <div class="kot-mark" aria-hidden="true">AB</div>
         <div>
-            <div class="kot-product">{{ ($kioskLocation ?? 'school') === 'bus' ? 'Bus attendance' : 'Face attendance' }}</div>
+            <div class="kot-product">
+                @if(($kioskAudience ?? null) === 'teachers')
+                    Teacher attendance
+                @elseif(($kioskLocation ?? 'school') === 'bus')
+                    Bus attendance
+                @elseif(($kioskAudience ?? null) === 'students')
+                    Student attendance
+                @else
+                    Face attendance
+                @endif
+            </div>
             <div class="kot-place">
                 {{ $kioskName ?? 'School kiosk' }}
                 @if(auth()->check())

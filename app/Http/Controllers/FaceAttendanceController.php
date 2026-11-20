@@ -25,6 +25,7 @@ class FaceAttendanceController extends Controller
 
         return view('attendance.scan', [
             'kioskLocation' => $device?->location ?? 'school',
+            'kioskAudience' => $device?->audience,
             'kioskName' => $device?->name,
         ]);
     }
@@ -54,6 +55,24 @@ class FaceAttendanceController extends Controller
         /** @var KioskDevice|null $device */
         $device = $request->attributes->get('kiosk_device');
         $location = $device?->location === 'bus' ? 'bus' : 'school';
+
+        if ($device?->audience === 'teachers' && $user->isStudent()) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'This kiosk is for teachers and staff. Students should use the school or bus kiosk.',
+                'person_name' => $user->name,
+                'role' => $user->role,
+            ], 422);
+        }
+
+        if ($device?->audience === 'students' && ! $user->isStudent()) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'This kiosk is for students. Teachers and staff should use the teacher kiosk.',
+                'person_name' => $user->name,
+                'role' => $user->role,
+            ], 422);
+        }
 
         $today = now()->toDateString();
 

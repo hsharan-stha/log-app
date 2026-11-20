@@ -6,15 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\SchoolClass;
 use App\Models\User;
+use App\Support\StaffAttendanceWorkbook;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AttendanceReportController extends Controller
 {
     public function monthly(Request $request): View
     {
-        $defaultMonth = Carbon::now()->subMonth()->format('Y-m');
+        $defaultMonth = Carbon::now()->format('Y-m');
         $monthInput = $request->query('month');
         $month = $monthInput
             ? $request->validate(['month' => ['date_format:Y-m']])['month']
@@ -58,7 +61,7 @@ class AttendanceReportController extends Controller
             ];
         };
 
-        $reportStaffRoles = array_values(array_diff(OfficeUserController::ROLES, ['attendance']));
+        $reportStaffRoles = OfficeUserController::STAFF_ROLES;
         $teacherRows = $people->where('role', 'teacher')->values()->map($mapRow);
         $staffRows = $people->whereIn('role', $reportStaffRoles)->values()->map($mapRow);
         $studentRows = $people->where('role', 'student')->values()->map($mapRow);
@@ -87,6 +90,37 @@ class AttendanceReportController extends Controller
             'reportKind' => 'workforce',
             'reportTitle' => 'Staff attendance report',
             'reportBlurb' => 'Monthly weekday summary for teachers and staff.',
+        ]);
+    }
+
+    public function exportTeachers(Request $request): StreamedResponse
+    {
+        $monthInput = $request->query('month');
+        $month = $monthInput
+            ? $request->validate(['month' => ['date_format:Y-m']])['month']
+            : Carbon::now()->format('Y-m');
+
+        $start = Carbon::createFromFormat('Y-m', $month)->startOfMonth();
+        $end = $start->copy()->endOfMonth();
+
+        $people = User::query()
+            ->whereIn('role', array_merge(['teacher'], OfficeUserController::STAFF_ROLES))
+            ->orderByRaw("CASE WHEN role = 'teacher' THEN 0 ELSE 1 END")
+            ->orderBy('name')
+            ->get();
+
+        $records = Attendance::query()
+            ->whereBetween('attendance_date', [$start->toDateString(), $end->toDateString()])
+            ->whereIn('user_id', $people->pluck('id'))
+            ->get()
+            ->keyBy(fn (Attendance $row) => $row->user_id.'|'.$row->attendance_date->toDateString());
+
+        return response()->streamDownload(function () use ($people, $records, $start) {
+            $book = StaffAttendanceWorkbook::make($people, $records, $start);
+            (new Xlsx($book))->save('php://output');
+            $book->disconnectWorksheets();
+        }, 'staff-attendance-'.$month.'.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
     }
 
@@ -121,7 +155,7 @@ class AttendanceReportController extends Controller
     {
         $this->ensureStaff($staff);
 
-        $defaultMonth = Carbon::now()->subMonth()->format('Y-m');
+        $defaultMonth = Carbon::now()->format('Y-m');
         $monthInput = $request->query('month');
         $month = $monthInput
             ? $request->validate(['month' => ['date_format:Y-m']])['month']

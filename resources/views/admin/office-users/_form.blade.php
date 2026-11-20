@@ -23,6 +23,9 @@
     <input id="phone" name="phone" class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone', $officeUser?->phone) }}">
     @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
 </div>
+@if(! empty($deviceLogin))
+    <p class="mb-3">Role: <strong>Attendance</strong></p>
+@else
 <div class="mb-3">
     <label class="form-label" for="role">Role</label>
     <select id="role" name="role" class="form-select @error('role') is-invalid @enderror" required>
@@ -32,6 +35,7 @@
     </select>
     @error('role')<div class="invalid-feedback">{{ $message }}</div>@enderror
 </div>
+@endif
 @if($officeUser)
     <div class="mb-3">
         <label class="form-label" for="password">New password</label>

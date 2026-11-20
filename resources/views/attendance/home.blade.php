@@ -11,12 +11,11 @@
     @if($existingDevice)
         <div class="alert alert-success">
             This browser is registered as <strong>{{ $existingDevice->name }}</strong>
-            ({{ $existingDevice->locationLabel() }} kiosk · {{ $existingDevice->token_prefix }}…).
+            ({{ $existingDevice->audienceLabel() }} · {{ $existingDevice->locationLabel() }} · {{ $existingDevice->token_prefix }}…).
         </div>
-    @elseif($blockingDevice)
+    @elseif($slotsFull)
         <div class="alert alert-warning">
-            Another kiosk is already registered (<strong>{{ $blockingDevice->name }}</strong>).
-            Ask an admin to revoke it before this tablet can be registered.
+            All three kiosks are already registered. Ask an admin to revoke one before this tablet can be registered.
         </div>
     @else
         <div class="alert alert-warning">
@@ -27,7 +26,7 @@
     <div class="d-flex flex-wrap gap-2">
         @if($existingDevice)
             <a href="{{ route('attendance.scan') }}" class="btn btn-primary">Open face attendance</a>
-        @elseif(! $blockingDevice)
+        @elseif($canRegister)
             <a href="{{ route('attendance.setup') }}" class="btn btn-outline-primary">Setup kiosk device</a>
         @endif
     </div>

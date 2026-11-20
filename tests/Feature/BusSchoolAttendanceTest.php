@@ -17,6 +17,7 @@ class BusSchoolAttendanceTest extends TestCase
 
     public function test_non_bus_student_can_check_in_at_school_without_bus(): void
     {
+        $this->freezeTime();
         [$operator, $schoolToken, $student] = $this->setupOperatorAndStudent(ridesBus: false);
 
         $this->verifyAs($operator, $schoolToken, $student)
@@ -86,6 +87,7 @@ class BusSchoolAttendanceTest extends TestCase
     public function test_staff_school_check_in_and_out_without_bus_or_guardian_alert(): void
     {
         Notification::fake();
+        $this->travelTo(now()->startOfDay()->setTime(8, 0));
 
         $guardian = User::factory()->create(['role' => 'guardian']);
         $operator = User::factory()->create(['role' => 'attendance']);
@@ -146,6 +148,31 @@ class BusSchoolAttendanceTest extends TestCase
         $this->verifyAs($operator, $schoolToken, $student)
             ->assertOk()
             ->assertJson(['action' => 'school_checkout']);
+    }
+
+    public function test_kiosk_rejects_the_wrong_group(): void
+    {
+        $operator = User::factory()->create(['role' => 'attendance']);
+        $teacher = User::factory()->create([
+            'role' => 'teacher',
+            'face_descriptor' => array_fill(0, 128, 0.35),
+        ]);
+        $student = User::factory()->create([
+            'role' => 'student',
+            'rides_bus' => true,
+            'face_descriptor' => array_fill(0, 128, 0.75),
+        ]);
+
+        ['plain_token' => $teacherToken] = KioskDevice::register('Staff room', 'school', $operator, 'teachers');
+        ['plain_token' => $busToken] = KioskDevice::register('Bus tablet', 'bus', $operator, 'students');
+
+        $this->verifyAs($operator, $teacherToken, $student)
+            ->assertStatus(422)
+            ->assertJsonFragment(['message' => 'This kiosk is for teachers and staff. Students should use the school or bus kiosk.']);
+
+        $this->verifyAs($operator, $busToken, $teacher)
+            ->assertStatus(422)
+            ->assertJsonFragment(['message' => 'This kiosk is for students. Teachers and staff should use the teacher kiosk.']);
     }
 
     public function test_non_bus_student_rejected_at_bus_kiosk(): void

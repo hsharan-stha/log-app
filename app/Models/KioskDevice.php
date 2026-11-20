@@ -8,9 +8,17 @@ use Illuminate\Support\Str;
 
 class KioskDevice extends Model
 {
+    /** @var array<string, array{audience: string, location: string, label: string}> */
+    public const SLOTS = [
+        'teachers' => ['audience' => 'teachers', 'location' => 'school', 'label' => 'Teachers'],
+        'students_school' => ['audience' => 'students', 'location' => 'school', 'label' => 'Students at school'],
+        'students_bus' => ['audience' => 'students', 'location' => 'bus', 'label' => 'Students on the bus'],
+    ];
+
     protected $fillable = [
         'name',
         'location',
+        'audience',
         'token_hash',
         'token_prefix',
         'registered_by',
@@ -51,6 +59,57 @@ class KioskDevice extends Model
         return $this->isBusKiosk() ? 'Bus' : 'School';
     }
 
+    public function audienceLabel(): string
+    {
+        return match ($this->audience) {
+            'teachers' => 'Teachers',
+            'students' => 'Students',
+            default => 'Teachers & students',
+        };
+    }
+
+    public function blocksSlot(string $slot): bool
+    {
+        if (! $this->isActive() || ! isset(self::SLOTS[$slot])) {
+            return false;
+        }
+
+        $wanted = self::SLOTS[$slot];
+
+        if ($this->audience === $wanted['audience'] && $this->location === $wanted['location']) {
+            return true;
+        }
+
+        if ($this->audience === null && $this->isBusKiosk()) {
+            return $slot === 'students_bus';
+        }
+
+        return $this->audience === null
+            && $this->location === 'school'
+            && $wanted['location'] === 'school';
+    }
+
+    public static function deviceBlockingSlot(string $slot): ?self
+    {
+        $device = static::query()
+            ->whereNull('revoked_at')
+            ->get()
+            ->first(fn (self $device) => $device->blocksSlot($slot));
+
+        return $device instanceof self ? $device : null;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function openSlots(): array
+    {
+        return array_values(array_filter(
+            array_keys(self::SLOTS),
+            fn (string $slot) => static::deviceBlockingSlot($slot) === null
+        ));
+    }
+
     public function revoke(): void
     {
         $this->forceFill(['revoked_at' => now()])->save();
@@ -64,14 +123,19 @@ class KioskDevice extends Model
     /**
      * @return array{device: self, plain_token: string}
      */
-    public static function register(string $name, string $location = 'school', ?User $registrar = null): array
+    public static function register(string $name, string $location = 'school', ?User $registrar = null, ?string $audience = null): array
     {
         $plain = Str::random(64);
         $location = $location === 'bus' ? 'bus' : 'school';
+        $audience = in_array($audience, ['teachers', 'students'], true) ? $audience : null;
+        if ($audience === 'teachers') {
+            $location = 'school';
+        }
 
         $device = static::query()->create([
             'name' => $name,
             'location' => $location,
+            'audience' => $audience,
             'token_hash' => hash('sha256', $plain),
             'token_prefix' => substr($plain, 0, 8),
             'registered_by' => $registrar?->id,

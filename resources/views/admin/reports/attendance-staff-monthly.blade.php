@@ -3,12 +3,6 @@
 @section('title', ($staff->isStudent() ? 'Student' : ($staff->isOfficeStaff() ? 'Staff' : 'Teacher')).' monthly attendance')
 
 @section('content')
-    @if($staff->isStudent())
-        @include('admin.partials.reports-flow', [
-            'current' => 'students',
-        ])
-    @endif
-
     <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
         <div>
             <h1 class="h3 mb-1">{{ $staff->name }}</h1>
@@ -98,8 +92,14 @@
                 <tr>
                     <th class="ps-4">Date</th>
                     <th>Weekday</th>
-                    <th class="text-center">Check-in</th>
-                    <th class="text-center">Check-out</th>
+                    @if($staff->isStudent())
+                        <th class="text-center">Bus in</th>
+                    @endif
+                    <th class="text-center">{{ $staff->isStudent() ? 'School in' : 'Check-in' }}</th>
+                    <th class="text-center">{{ $staff->isStudent() ? 'School out' : 'Check-out' }}</th>
+                    @if($staff->isStudent())
+                        <th class="text-center">Bus out</th>
+                    @endif
                     <th class="text-end pe-4">Duration</th>
                 </tr>
                 </thead>
@@ -119,6 +119,20 @@
                                 <span class="badge bg-secondary-subtle text-secondary border ms-1">Weekend</span>
                             @endif
                         </td>
+                        @if($staff->isStudent())
+                        <td class="py-3 text-center">
+                            @if($staff->rides_bus && $row && $row->bus_checkin_time)
+                                <x-attendance-time-photo
+                                    :time="$row->bus_checkin_time->format('H:i')"
+                                    :photo-url="$row->busCheckinPhotoUrl()"
+                                    variant="in"
+                                    size="sm"
+                                />
+                            @else
+                                <span class="small text-muted">—</span>
+                            @endif
+                        </td>
+                        @endif
                         <td class="py-3 text-center">
                             @if($row && $row->checkin_time)
                                 <x-attendance-time-photo
@@ -143,6 +157,20 @@
                                 <span class="small text-muted">—</span>
                             @endif
                         </td>
+                        @if($staff->isStudent())
+                        <td class="py-3 text-center">
+                            @if($staff->rides_bus && $row && $row->bus_checkout_time)
+                                <x-attendance-time-photo
+                                    :time="$row->bus_checkout_time->format('H:i')"
+                                    :photo-url="$row->busCheckoutPhotoUrl()"
+                                    variant="out"
+                                    size="sm"
+                                />
+                            @else
+                                <span class="small text-muted">—</span>
+                            @endif
+                        </td>
+                        @endif
                         <td class="py-3 text-end pe-4 font-monospace small fw-semibold text-body-secondary">
                             {{ $cell['worked_label'] }}
                         </td>

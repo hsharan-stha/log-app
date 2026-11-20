@@ -26,7 +26,7 @@ class SchoolPortalTest extends TestCase
 
         $registered = $this->actingAs($operator)->post(route('attendance.setup.store'), [
             'name' => 'Entrance Tablet',
-            'location' => 'school',
+            'slot' => 'students_school',
         ]);
         $registered->assertRedirect(route('attendance.scan'));
 
@@ -100,27 +100,33 @@ class SchoolPortalTest extends TestCase
             ->assertOk();
     }
 
-    public function test_only_one_kiosk_can_be_registered_until_admin_revokes_it(): void
+    public function test_three_kiosk_slots_can_be_registered_and_a_slot_cannot_be_duplicated(): void
     {
         $operator = User::factory()->create(['role' => 'attendance']);
         $admin = User::factory()->create(['role' => 'admin']);
         $hr = User::factory()->create(['role' => 'hr']);
 
+        foreach ([
+            'teachers' => 'Teacher tablet',
+            'students_school' => 'School gate',
+            'students_bus' => 'Bus tablet',
+        ] as $slot => $name) {
+            $this->actingAs($operator)->post(route('attendance.setup.store'), [
+                'name' => $name,
+                'slot' => $slot,
+            ])->assertRedirect(route('attendance.scan'));
+        }
+
+        $this->assertSame(3, KioskDevice::query()->whereNull('revoked_at')->count());
+
         $this->actingAs($operator)->post(route('attendance.setup.store'), [
-            'name' => 'Entrance Tablet',
-            'location' => 'school',
-        ])->assertRedirect(route('attendance.scan'));
+            'name' => 'Second teacher tablet',
+            'slot' => 'teachers',
+        ])->assertSessionHasErrors('slot');
 
-        $this->assertSame(1, KioskDevice::query()->whereNull('revoked_at')->count());
+        $this->assertSame(3, KioskDevice::query()->whereNull('revoked_at')->count());
 
-        $this->actingAs($operator)->post(route('attendance.setup.store'), [
-            'name' => 'Second Tablet',
-            'location' => 'bus',
-        ])->assertSessionHasErrors('name');
-
-        $this->assertSame(1, KioskDevice::query()->whereNull('revoked_at')->count());
-
-        $device = KioskDevice::query()->whereNull('revoked_at')->first();
+        $device = KioskDevice::query()->where('audience', 'teachers')->whereNull('revoked_at')->first();
 
         $this->actingAs($hr)
             ->post(route('admin.devices.revoke', $device))
@@ -130,14 +136,14 @@ class SchoolPortalTest extends TestCase
             ->post(route('admin.devices.revoke', $device))
             ->assertRedirect(route('admin.devices.index'));
 
-        $this->assertSame(0, KioskDevice::query()->whereNull('revoked_at')->count());
+        $this->assertSame(2, KioskDevice::query()->whereNull('revoked_at')->count());
 
         $this->actingAs($operator)->post(route('attendance.setup.store'), [
-            'name' => 'Replacement Tablet',
-            'location' => 'school',
+            'name' => 'Replacement teacher tablet',
+            'slot' => 'teachers',
         ])->assertRedirect(route('attendance.scan'));
 
-        $this->assertSame(1, KioskDevice::query()->whereNull('revoked_at')->count());
+        $this->assertSame(3, KioskDevice::query()->whereNull('revoked_at')->count());
     }
 
     public function test_registered_device_can_open_kiosk_when_attendance_user_signed_in(): void

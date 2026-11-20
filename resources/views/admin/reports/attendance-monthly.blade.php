@@ -17,7 +17,7 @@
         };
     @endphp
 
-    @if($reportKind !== 'workforce')
+    @if(! in_array($reportKind, ['workforce', 'student'], true))
         @include('admin.partials.reports-flow', ['current' => $flowCurrent])
     @endif
 
@@ -26,6 +26,11 @@
             <h1 class="h3 mb-1">{{ $reportTitle ?? 'Monthly attendance' }}</h1>
             <p class="text-muted mb-0">{{ $reportBlurb ?? 'Separate summaries for staff, teachers, and students (weekdays).' }}</p>
         </div>
+        @if(($reportKind ?? '') === 'workforce')
+            <a href="{{ route('admin.reports.attendance.teachers.export', ['month' => $month]) }}" class="btn btn-outline-primary">
+                Export Excel
+            </a>
+        @endif
     </div>
 
     <div class="card border-0 shadow-sm mb-4 overflow-hidden">
