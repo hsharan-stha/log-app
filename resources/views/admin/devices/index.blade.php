@@ -6,7 +6,7 @@
     <div class="people-head">
         <div>
             <h1>Kiosk devices</h1>
-            <p>One teacher kiosk and two student kiosks (school and bus) can be active. Revoke a device before another tablet can take that place.</p>
+            <p>One teacher kiosk can be active. Student school and student bus can each have several tablets. Revoke the teacher kiosk before another teacher tablet can take that place.</p>
         </div>
     </div>
     <div class="card people-table-card">

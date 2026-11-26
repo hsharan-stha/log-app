@@ -110,4 +110,56 @@ class AttendanceCalendarTest extends TestCase
             ->assertDontSee('Other Present')
             ->assertSee('1 of 1');
     }
+
+    public function test_admin_can_update_checkout_from_the_staff_day_page(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $teacher = User::factory()->create(['role' => 'teacher', 'name' => 'Day Teacher']);
+        $student = User::factory()->create(['role' => 'student', 'name' => 'Day Student']);
+
+        $attendance = Attendance::query()->create([
+            'user_id' => $teacher->id,
+            'attendance_date' => '2026-11-18',
+            'checkin_time' => '2026-11-18 08:15:00',
+            'checkout_time' => '2026-11-18 15:00:00',
+        ]);
+        Attendance::query()->create([
+            'user_id' => $student->id,
+            'attendance_date' => '2026-11-18',
+            'checkin_time' => '2026-11-18 08:15:00',
+        ]);
+
+        $day = route('admin.attendance.day', ['group' => 'staff', 'date' => '2026-11-18']);
+
+        $this->actingAs($admin)
+            ->get($day)
+            ->assertOk()
+            ->assertSee('Checkout time for Day Teacher', false)
+            ->assertSee('value="15:00"', false);
+
+        $this->actingAs($admin)
+            ->from($day)
+            ->post(route('admin.reports.attendance.staff.checkout', $teacher), [
+                'date' => '2026-11-18',
+                'checkout_time' => '17:00',
+                'replace' => '1',
+                'person' => $teacher->id,
+            ])
+            ->assertRedirect($day)
+            ->assertSessionHas('success');
+
+        $attendance->refresh();
+        $this->assertTrue($attendance->manual_checkout);
+        $this->assertSame('17:00', $attendance->checkout_time->format('H:i'));
+
+        $this->actingAs($admin)
+            ->get($day)
+            ->assertSee('Manual')
+            ->assertSee('17:00');
+
+        $this->actingAs($admin)
+            ->get(route('admin.attendance.day', ['group' => 'students', 'date' => '2026-11-18']))
+            ->assertOk()
+            ->assertDontSee('Checkout time for', false);
+    }
 }

@@ -153,6 +153,9 @@
                                     variant="out"
                                     size="sm"
                                 />
+                                @if($row->manual_checkout)
+                                    <div class="mt-1"><span class="badge text-bg-warning">Manual</span></div>
+                                @endif
                             @else
                                 <span class="small text-muted">—</span>
                             @endif

@@ -74,6 +74,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/reports/attendance/students', [AttendanceReportController::class, 'students'])->name('reports.attendance.students');
     Route::get('/reports/attendance/staff/{staff}', [AttendanceReportController::class, 'staffMonthly'])
         ->name('reports.attendance.staff');
+    Route::post('/reports/attendance/staff/{staff}/checkout', [AttendanceReportController::class, 'manualCheckout'])
+        ->name('reports.attendance.staff.checkout');
 
     Route::get('notices', [AdminNoticeController::class, 'index'])->name('notices.index');
     Route::get('notices/create', [AdminNoticeController::class, 'create'])->name('notices.create');

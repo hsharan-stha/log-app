@@ -126,4 +126,86 @@ class AttendanceReportTest extends TestCase
             ->assertSee('15:00')
             ->assertSee('16:10');
     }
+
+    public function test_admin_can_save_a_manual_checkout_that_counts_like_a_kiosk_checkout(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $teacher = User::factory()->create(['role' => 'teacher', 'name' => 'Manual Teacher']);
+
+        $attendance = Attendance::query()->create([
+            'user_id' => $teacher->id,
+            'attendance_date' => '2026-11-18',
+            'checkin_time' => '2026-11-18 08:15:00',
+        ]);
+
+        $page = route('admin.reports.attendance.staff', ['staff' => $teacher, 'month' => '2026-11']);
+
+        $this->actingAs($admin)
+            ->get($page)
+            ->assertOk()
+            ->assertDontSee('name="checkout_time"', false)
+            ->assertDontSee('Manual checkout time for', false);
+
+        $this->actingAs($admin)
+            ->from($page)
+            ->post(route('admin.reports.attendance.staff.checkout', $teacher), [
+                'date' => '2026-11-18',
+                'checkout_time' => '08:30',
+            ])
+            ->assertRedirect($page)
+            ->assertSessionHasErrors('checkout_time');
+
+        $this->assertNull($attendance->fresh()->checkout_time);
+
+        $this->actingAs($admin)
+            ->from($page)
+            ->post(route('admin.reports.attendance.staff.checkout', $teacher), [
+                'date' => '2026-11-18',
+                'checkout_time' => '17:00',
+            ])
+            ->assertRedirect($page)
+            ->assertSessionHas('success');
+
+        $attendance->refresh();
+        $this->assertTrue($attendance->manual_checkout);
+        $this->assertSame('17:00', $attendance->checkout_time->format('H:i'));
+        $this->assertNull($attendance->checkout_photo_path);
+
+        $this->actingAs($admin)
+            ->get($page)
+            ->assertOk()
+            ->assertSee('17:00')
+            ->assertSee('Manual')
+            ->assertSee('8h 45m')
+            ->assertDontSee('name="checkout_time"', false);
+
+        $this->actingAs($admin)
+            ->from($page)
+            ->post(route('admin.reports.attendance.staff.checkout', $teacher), [
+                'date' => '2026-11-18',
+                'checkout_time' => '18:00',
+            ])
+            ->assertSessionHasErrors('checkout_time');
+
+        $this->assertSame('17:00', $attendance->fresh()->checkout_time->format('H:i'));
+    }
+
+    public function test_manual_checkout_is_not_available_for_a_student(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $student = User::factory()->create(['role' => 'student']);
+
+        Attendance::query()->create([
+            'user_id' => $student->id,
+            'attendance_date' => '2026-11-18',
+            'checkin_time' => '2026-11-18 08:15:00',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.reports.attendance.staff.checkout', $student), [
+                'date' => '2026-11-18',
+                'checkout_time' => '17:00',
+            ])
+            ->assertNotFound();
+    }
 }

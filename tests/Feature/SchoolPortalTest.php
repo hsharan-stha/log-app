@@ -119,12 +119,24 @@ class SchoolPortalTest extends TestCase
 
         $this->assertSame(3, KioskDevice::query()->whereNull('revoked_at')->count());
 
+        foreach ([
+            'students_school' => 'Second school gate',
+            'students_bus' => 'Second bus tablet',
+        ] as $slot => $name) {
+            $this->actingAs($operator)->post(route('attendance.setup.store'), [
+                'name' => $name,
+                'slot' => $slot,
+            ])->assertRedirect(route('attendance.scan'));
+        }
+
+        $this->assertSame(5, KioskDevice::query()->whereNull('revoked_at')->count());
+
         $this->actingAs($operator)->post(route('attendance.setup.store'), [
             'name' => 'Second teacher tablet',
             'slot' => 'teachers',
         ])->assertSessionHasErrors('slot');
 
-        $this->assertSame(3, KioskDevice::query()->whereNull('revoked_at')->count());
+        $this->assertSame(5, KioskDevice::query()->whereNull('revoked_at')->count());
 
         $device = KioskDevice::query()->where('audience', 'teachers')->whereNull('revoked_at')->first();
 
@@ -136,14 +148,14 @@ class SchoolPortalTest extends TestCase
             ->post(route('admin.devices.revoke', $device))
             ->assertRedirect(route('admin.devices.index'));
 
-        $this->assertSame(2, KioskDevice::query()->whereNull('revoked_at')->count());
+        $this->assertSame(4, KioskDevice::query()->whereNull('revoked_at')->count());
 
         $this->actingAs($operator)->post(route('attendance.setup.store'), [
             'name' => 'Replacement teacher tablet',
             'slot' => 'teachers',
         ])->assertRedirect(route('attendance.scan'));
 
-        $this->assertSame(3, KioskDevice::query()->whereNull('revoked_at')->count());
+        $this->assertSame(5, KioskDevice::query()->whereNull('revoked_at')->count());
     }
 
     public function test_registered_device_can_open_kiosk_when_attendance_user_signed_in(): void

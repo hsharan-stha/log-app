@@ -8,6 +8,7 @@ use App\Models\SchoolClass;
 use App\Models\User;
 use App\Support\StaffAttendanceWorkbook;
 use Carbon\Carbon;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -206,6 +207,55 @@ class AttendanceReportController extends Controller
                 'total_work_decimal_hours' => round($totalWorkSeconds / 3600, 1),
             ],
         ]);
+    }
+
+    public function manualCheckout(Request $request, User $staff): RedirectResponse
+    {
+        $this->ensureStaff($staff);
+        abort_unless(in_array($staff->role, User::CALENDAR_STAFF_ROLES, true), 404);
+
+        $data = $request->validate([
+            'date' => ['required', 'date_format:Y-m-d'],
+            'checkout_time' => ['required', 'date_format:H:i'],
+        ]);
+
+        $attendance = Attendance::query()
+            ->where('user_id', $staff->id)
+            ->whereDate('attendance_date', $data['date'])
+            ->first();
+
+        if ($attendance === null || $attendance->checkin_time === null) {
+            return back()->withErrors([
+                'checkout_time' => 'Check-in is required before a manual check-out.',
+            ])->withInput();
+        }
+
+        if ($attendance->checkout_time !== null && ! $request->boolean('replace')) {
+            return back()->withErrors([
+                'checkout_time' => 'This day already has a check-out.',
+            ])->withInput();
+        }
+
+        $checkout = Carbon::parse($data['date'].' '.$data['checkout_time']);
+        $earliest = $attendance->checkin_time->copy()->addHour();
+
+        if ($checkout->lt($earliest)) {
+            return back()->withErrors([
+                'checkout_time' => 'Check-out is too close to check-in. You can check out after '.$earliest->format('H:i').'.',
+            ])->withInput();
+        }
+
+        if ($checkout->greaterThan(now())) {
+            return back()->withErrors([
+                'checkout_time' => 'Check-out time cannot be in the future.',
+            ])->withInput();
+        }
+
+        $attendance->checkout_time = $checkout;
+        $attendance->manual_checkout = true;
+        $attendance->save();
+
+        return back()->with('success', 'Manual check-out saved for '.$checkout->toFormattedDateString().' at '.$checkout->format('H:i').'.');
     }
 
     private function workedSeconds(?Attendance $attendance): int

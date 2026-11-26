@@ -11,6 +11,9 @@
                 Attend <strong class="text-success">{{ $presentCount }}</strong>
                 · Unattend <strong class="text-danger">{{ $absentCount }}</strong>
                 · Roll {{ $eligibleTotal }}
+                @if($group === 'staff')
+                    Enter or change a checkout when the kiosk was missed. Hours count the same way, and the day is marked Manual.
+                @endif
             </p>
         </div>
     </div>
@@ -104,12 +107,33 @@
                                     />
                                 </td>
                                 <td class="text-center py-3 photo-cell" data-label="School out">
-                                    <x-attendance-time-photo
-                                        :time="optional($att->checkout_time)?->format('H:i')"
-                                        :photo-url="$att->checkoutPhotoUrl()"
-                                        variant="out"
-                                        size="sm"
-                                    />
+                                    @if($att->checkout_time)
+                                        <x-attendance-time-photo
+                                            :time="$att->checkout_time->format('H:i')"
+                                            :photo-url="$att->checkoutPhotoUrl()"
+                                            variant="out"
+                                            size="sm"
+                                        />
+                                        @if($att->manual_checkout)
+                                            <div class="mt-1"><span class="badge text-bg-warning">Manual</span></div>
+                                        @endif
+                                    @endif
+                                    @if($group === 'staff' && auth()->user()?->isAdmin() && $att->checkin_time && ! \Carbon\Carbon::parse($date)->isFuture())
+                                        <form method="POST" action="{{ route('admin.reports.attendance.staff.checkout', $user) }}" class="d-inline-flex align-items-center justify-content-center gap-1 {{ $att->checkout_time ? 'mt-2' : '' }}">
+                                            @csrf
+                                            <input type="hidden" name="date" value="{{ $date }}">
+                                            <input type="hidden" name="person" value="{{ $user->id }}">
+                                            @if($att->checkout_time)
+                                                <input type="hidden" name="replace" value="1">
+                                            @endif
+                                            <input type="time" name="checkout_time" class="form-control form-control-sm" style="width: 7.25rem;" required
+                                                   value="{{ (string) old('person') === (string) $user->id ? old('checkout_time') : ($att->checkout_time?->format('H:i') ?? '') }}"
+                                                   aria-label="Checkout time for {{ $user->name }}">
+                                            <button class="btn btn-sm btn-outline-primary" type="submit">Save</button>
+                                        </form>
+                                    @elseif(! $att->checkout_time)
+                                        <span class="text-muted">—</span>
+                                    @endif
                                 </td>
                                 @if($group === 'students')
                                 <td class="text-center pe-4 py-3 photo-cell" data-label="Bus out">

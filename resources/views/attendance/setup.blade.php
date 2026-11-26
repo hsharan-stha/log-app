@@ -5,7 +5,7 @@
 @section('content')
     <div class="mb-4">
         <h1 class="h3 mb-1">Register attendance kiosk</h1>
-        <p class="text-muted mb-0">Three kiosks can be active: one for teachers, one for students at school, and one for students on the bus. Revoke a device before another tablet can take that place.</p>
+        <p class="text-muted mb-0">Teachers use one kiosk. Students at school and students on the bus can each use more than one tablet. Revoke the teacher kiosk before another teacher tablet can take that place.</p>
     </div>
 
     @if($existingDevice)
@@ -17,7 +17,7 @@
         </div>
     @elseif($openSlots === [])
         <div class="alert alert-warning">
-            All three kiosks are already registered. Ask an admin to revoke one before this tablet can be registered.
+            No kiosk is open for this tablet. Ask an admin to revoke a device first.
         </div>
         <ul class="mb-0">
             @foreach($activeDevices as $device)

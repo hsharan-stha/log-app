@@ -76,6 +76,11 @@ class KioskDevice extends Model
 
         $wanted = self::SLOTS[$slot];
 
+        // Student school and student bus can each have several tablets.
+        if ($wanted['audience'] === 'students' && $this->audience === 'students') {
+            return false;
+        }
+
         if ($this->audience === $wanted['audience'] && $this->location === $wanted['location']) {
             return true;
         }

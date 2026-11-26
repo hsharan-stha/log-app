@@ -15,7 +15,7 @@
         </div>
     @elseif($slotsFull)
         <div class="alert alert-warning">
-            All three kiosks are already registered. Ask an admin to revoke one before this tablet can be registered.
+            No kiosk is open for this tablet. Ask an admin to revoke a device first.
         </div>
     @else
         <div class="alert alert-warning">

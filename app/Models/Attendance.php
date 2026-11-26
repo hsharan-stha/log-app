@@ -15,6 +15,7 @@ class Attendance extends Model
         'checkout_time',
         'checkin_photo_path',
         'checkout_photo_path',
+        'manual_checkout',
         'bus_checkin_time',
         'bus_checkout_time',
         'bus_checkin_photo_path',
@@ -30,6 +31,7 @@ class Attendance extends Model
             'attendance_date' => 'date',
             'checkin_time' => 'datetime',
             'checkout_time' => 'datetime',
+            'manual_checkout' => 'boolean',
             'bus_checkin_time' => 'datetime',
             'bus_checkout_time' => 'datetime',
         ];
