@@ -113,34 +113,38 @@ class AttendanceCalendarTest extends TestCase
 
     public function test_admin_can_update_checkout_from_the_staff_day_page(): void
     {
+        $this->travelTo('2026-11-26 18:30:00');
+
         $admin = User::factory()->create(['role' => 'admin']);
         $teacher = User::factory()->create(['role' => 'teacher', 'name' => 'Day Teacher']);
         $student = User::factory()->create(['role' => 'student', 'name' => 'Day Student']);
+        $today = now()->toDateString();
 
         $attendance = Attendance::query()->create([
             'user_id' => $teacher->id,
-            'attendance_date' => '2026-11-18',
-            'checkin_time' => '2026-11-18 08:15:00',
-            'checkout_time' => '2026-11-18 15:00:00',
+            'attendance_date' => $today,
+            'checkin_time' => $today.' 08:15:00',
+            'checkout_time' => $today.' 15:00:00',
         ]);
         Attendance::query()->create([
             'user_id' => $student->id,
-            'attendance_date' => '2026-11-18',
-            'checkin_time' => '2026-11-18 08:15:00',
+            'attendance_date' => $today,
+            'checkin_time' => $today.' 08:15:00',
         ]);
 
-        $day = route('admin.attendance.day', ['group' => 'staff', 'date' => '2026-11-18']);
+        $day = route('admin.attendance.day', ['group' => 'staff', 'date' => $today]);
 
         $this->actingAs($admin)
             ->get($day)
             ->assertOk()
             ->assertSee('Checkout time for Day Teacher', false)
-            ->assertSee('value="15:00"', false);
+            ->assertSee('value="15:00"', false)
+            ->assertSee('Update', false);
 
         $this->actingAs($admin)
             ->from($day)
             ->post(route('admin.reports.attendance.staff.checkout', $teacher), [
-                'date' => '2026-11-18',
+                'date' => $today,
                 'checkout_time' => '17:00',
                 'replace' => '1',
                 'person' => $teacher->id,
@@ -152,13 +156,37 @@ class AttendanceCalendarTest extends TestCase
         $this->assertTrue($attendance->manual_checkout);
         $this->assertSame('17:00', $attendance->checkout_time->format('H:i'));
 
-        $this->actingAs($admin)
-            ->get($day)
-            ->assertSee('Manual')
-            ->assertSee('17:00');
+        $past = Attendance::query()->create([
+            'user_id' => $teacher->id,
+            'attendance_date' => '2026-11-18',
+            'checkin_time' => '2026-11-18 08:15:00',
+            'checkout_time' => '2026-11-18 15:00:00',
+        ]);
+
+        $pastDay = route('admin.attendance.day', ['group' => 'staff', 'date' => '2026-11-18']);
 
         $this->actingAs($admin)
-            ->get(route('admin.attendance.day', ['group' => 'students', 'date' => '2026-11-18']))
+            ->get($pastDay)
+            ->assertOk()
+            ->assertSee('Manual checkout')
+            ->assertSee('Checkout time for Day Teacher', false);
+
+        $this->actingAs($admin)
+            ->from($pastDay)
+            ->post(route('admin.reports.attendance.staff.checkout', $teacher), [
+                'date' => '2026-11-18',
+                'checkout_time' => '18:00',
+                'replace' => '1',
+            ])
+            ->assertRedirect($pastDay)
+            ->assertSessionHas('success');
+
+        $past->refresh();
+        $this->assertSame('18:00', $past->checkout_time->format('H:i'));
+        $this->assertTrue($past->manual_checkout);
+
+        $this->actingAs($admin)
+            ->get(route('admin.attendance.day', ['group' => 'students', 'date' => $today]))
             ->assertOk()
             ->assertDontSee('Checkout time for', false);
     }

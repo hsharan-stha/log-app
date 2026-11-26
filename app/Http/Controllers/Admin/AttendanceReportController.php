@@ -219,6 +219,12 @@ class AttendanceReportController extends Controller
             'checkout_time' => ['required', 'date_format:H:i'],
         ]);
 
+        if (Carbon::parse($data['date'])->startOfDay()->greaterThan(now()->startOfDay())) {
+            return back()->withErrors([
+                'checkout_time' => 'Checkout cannot be set for a future day.',
+            ])->withInput();
+        }
+
         $attendance = Attendance::query()
             ->where('user_id', $staff->id)
             ->whereDate('attendance_date', $data['date'])

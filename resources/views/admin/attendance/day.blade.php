@@ -11,8 +11,8 @@
                 Attend <strong class="text-success">{{ $presentCount }}</strong>
                 · Unattend <strong class="text-danger">{{ $absentCount }}</strong>
                 · Roll {{ $eligibleTotal }}
-                @if($group === 'staff')
-                    Enter or change a checkout when the kiosk was missed. Hours count the same way, and the day is marked Manual.
+                @if($group === 'staff' && ! \Carbon\Carbon::parse($date)->isFuture())
+                    Checkout can be updated for today and earlier days. Hours count the same way, and the day is marked Manual.
                 @endif
             </p>
         </div>
@@ -31,7 +31,7 @@
     </form>
 
     <div class="row g-4">
-        <div class="col-lg-7">
+        <div class="col-12">
             <div class="card border-0 shadow-sm overflow-hidden">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <strong class="text-success">
@@ -43,6 +43,11 @@
                         @endif
                     </strong>
                 </div>
+                @php
+                    $showManualCheckout = $group === 'staff'
+                        && auth()->user()?->isAdmin()
+                        && ! \Carbon\Carbon::parse($date)->isFuture();
+                @endphp
                 <div class="table-responsive day-table-wrap">
                     <table class="table table-attendance table-hover align-middle mb-0 day-table">
                         <thead class="bg-body-secondary">
@@ -53,9 +58,12 @@
                                 <th class="text-center">Bus in</th>
                             @endif
                             <th class="text-center">School in</th>
-                            <th class="text-center pe-4">School out</th>
+                            <th class="text-center {{ $showManualCheckout ? '' : 'pe-4' }}">School out</th>
                             @if($group === 'students')
                                 <th class="text-center pe-4">Bus out</th>
+                            @endif
+                            @if($showManualCheckout)
+                                <th class="text-center pe-4">Manual checkout</th>
                             @endif
                         </tr>
                         </thead>
@@ -114,27 +122,38 @@
                                             variant="out"
                                             size="sm"
                                         />
-                                        @if($att->manual_checkout)
+                                        @if(! $showManualCheckout && $att->manual_checkout)
                                             <div class="mt-1"><span class="badge text-bg-warning">Manual</span></div>
                                         @endif
+                                    @else
+                                        <span class="text-muted">—</span>
                                     @endif
-                                    @if($group === 'staff' && auth()->user()?->isAdmin() && $att->checkin_time && ! \Carbon\Carbon::parse($date)->isFuture())
-                                        <form method="POST" action="{{ route('admin.reports.attendance.staff.checkout', $user) }}" class="d-inline-flex align-items-center justify-content-center gap-1 {{ $att->checkout_time ? 'mt-2' : '' }}">
+                                </td>
+                                @if($showManualCheckout)
+                                <td class="text-center py-3 pe-4 photo-cell school-out-cell" data-label="Manual checkout">
+                                    @if($att->checkin_time)
+                                        <form method="POST" action="{{ route('admin.reports.attendance.staff.checkout', $user) }}" class="checkout-edit">
                                             @csrf
                                             <input type="hidden" name="date" value="{{ $date }}">
                                             <input type="hidden" name="person" value="{{ $user->id }}">
                                             @if($att->checkout_time)
                                                 <input type="hidden" name="replace" value="1">
                                             @endif
-                                            <input type="time" name="checkout_time" class="form-control form-control-sm" style="width: 7.25rem;" required
-                                                   value="{{ (string) old('person') === (string) $user->id ? old('checkout_time') : ($att->checkout_time?->format('H:i') ?? '') }}"
-                                                   aria-label="Checkout time for {{ $user->name }}">
-                                            <button class="btn btn-sm btn-outline-primary" type="submit">Save</button>
+                                            <div class="checkout-edit__control">
+                                                <input type="time" name="checkout_time" required
+                                                       value="{{ (string) old('person') === (string) $user->id ? old('checkout_time') : ($att->checkout_time?->format('H:i') ?? '') }}"
+                                                       aria-label="Checkout time for {{ $user->name }}">
+                                                <button type="submit">Update</button>
+                                            </div>
+                                            @if($att->manual_checkout)
+                                                <span class="badge text-bg-warning">Manual</span>
+                                            @endif
                                         </form>
-                                    @elseif(! $att->checkout_time)
+                                    @else
                                         <span class="text-muted">—</span>
                                     @endif
                                 </td>
+                                @endif
                                 @if($group === 'students')
                                 <td class="text-center pe-4 py-3 photo-cell" data-label="Bus out">
                                     @if($showBus)
@@ -152,7 +171,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="{{ $group === 'students' ? 6 : 4 }}" class="text-center text-muted py-5">
+                                <td colspan="{{ $group === 'students' ? 6 : ($showManualCheckout ? 5 : 4) }}" class="text-center text-muted py-5">
                                     @if($q !== '')
                                         No attended people match “{{ $q }}”.
                                     @else
@@ -167,7 +186,7 @@
             </div>
         </div>
 
-        <div class="col-lg-5">
+        <div class="col-lg-6">
             <div class="card border-0 shadow-sm overflow-hidden">
                 <div class="card-header bg-white">
                     <strong class="text-danger">
@@ -206,6 +225,51 @@
 @push('styles')
 <style>
     .day-search { width: min(100%, 280px); min-width: 0; }
+    .checkout-edit {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .school-out-cell { min-width: 9.5rem; }
+    .checkout-edit__control {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: stretch;
+        width: 7.25rem;
+        background: #fff;
+        border: 1px solid #d6dde6;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+    }
+    .checkout-edit__control:focus-within {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+    .checkout-edit__control input[type="time"] {
+        border: 0;
+        background: transparent;
+        width: 100%;
+        padding: 0.45rem 0.4rem 0.35rem;
+        text-align: center;
+        font-weight: 650;
+        font-variant-numeric: tabular-nums;
+        color: #0f172a;
+    }
+    .checkout-edit__control input[type="time"]:focus { outline: none; }
+    .checkout-edit__control button {
+        border: 0;
+        border-top: 1px solid #e2e8f0;
+        background: #0f2744;
+        color: #fff;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        padding: 0.4rem 0.5rem;
+    }
+    .checkout-edit__control button:hover { background: #1e3a5f; }
     @media (max-width: 767.98px) {
         .day-search { width: 100%; }
         .day-table-wrap { overflow: visible; }

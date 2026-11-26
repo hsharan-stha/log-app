@@ -129,16 +129,19 @@ class AttendanceReportTest extends TestCase
 
     public function test_admin_can_save_a_manual_checkout_that_counts_like_a_kiosk_checkout(): void
     {
+        $this->travelTo('2026-11-26 18:30:00');
+
         $admin = User::factory()->create(['role' => 'admin']);
         $teacher = User::factory()->create(['role' => 'teacher', 'name' => 'Manual Teacher']);
+        $today = now()->toDateString();
 
         $attendance = Attendance::query()->create([
             'user_id' => $teacher->id,
-            'attendance_date' => '2026-11-18',
-            'checkin_time' => '2026-11-18 08:15:00',
+            'attendance_date' => $today,
+            'checkin_time' => $today.' 08:15:00',
         ]);
 
-        $page = route('admin.reports.attendance.staff', ['staff' => $teacher, 'month' => '2026-11']);
+        $page = route('admin.reports.attendance.staff', ['staff' => $teacher, 'month' => now()->format('Y-m')]);
 
         $this->actingAs($admin)
             ->get($page)
@@ -149,7 +152,7 @@ class AttendanceReportTest extends TestCase
         $this->actingAs($admin)
             ->from($page)
             ->post(route('admin.reports.attendance.staff.checkout', $teacher), [
-                'date' => '2026-11-18',
+                'date' => $today,
                 'checkout_time' => '08:30',
             ])
             ->assertRedirect($page)
@@ -160,7 +163,7 @@ class AttendanceReportTest extends TestCase
         $this->actingAs($admin)
             ->from($page)
             ->post(route('admin.reports.attendance.staff.checkout', $teacher), [
-                'date' => '2026-11-18',
+                'date' => $today,
                 'checkout_time' => '17:00',
             ])
             ->assertRedirect($page)
@@ -182,7 +185,7 @@ class AttendanceReportTest extends TestCase
         $this->actingAs($admin)
             ->from($page)
             ->post(route('admin.reports.attendance.staff.checkout', $teacher), [
-                'date' => '2026-11-18',
+                'date' => $today,
                 'checkout_time' => '18:00',
             ])
             ->assertSessionHasErrors('checkout_time');
@@ -197,13 +200,13 @@ class AttendanceReportTest extends TestCase
 
         Attendance::query()->create([
             'user_id' => $student->id,
-            'attendance_date' => '2026-11-18',
-            'checkin_time' => '2026-11-18 08:15:00',
+            'attendance_date' => now()->toDateString(),
+            'checkin_time' => now()->toDateString().' 08:15:00',
         ]);
 
         $this->actingAs($admin)
             ->post(route('admin.reports.attendance.staff.checkout', $student), [
-                'date' => '2026-11-18',
+                'date' => now()->toDateString(),
                 'checkout_time' => '17:00',
             ])
             ->assertNotFound();
