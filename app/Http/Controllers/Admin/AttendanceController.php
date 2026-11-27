@@ -142,7 +142,7 @@ class AttendanceController extends Controller
 
     private function groupLabel(string $group): string
     {
-        return $group === 'staff' ? 'Staff & teachers' : 'Students';
+        return $group === 'staff' ? 'Staff' : 'Students';
     }
 
     /**

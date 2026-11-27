@@ -10,7 +10,7 @@ class KioskDevice extends Model
 {
     /** @var array<string, array{audience: string, location: string, label: string}> */
     public const SLOTS = [
-        'teachers' => ['audience' => 'teachers', 'location' => 'school', 'label' => 'Teachers'],
+        'teachers' => ['audience' => 'teachers', 'location' => 'school', 'label' => 'Staff'],
         'students_school' => ['audience' => 'students', 'location' => 'school', 'label' => 'Students at school'],
         'students_bus' => ['audience' => 'students', 'location' => 'bus', 'label' => 'Students on the bus'],
     ];
@@ -62,9 +62,9 @@ class KioskDevice extends Model
     public function audienceLabel(): string
     {
         return match ($this->audience) {
-            'teachers' => 'Teachers',
+            'teachers' => 'Staff',
             'students' => 'Students',
-            default => 'Teachers & students',
+            default => 'Staff & students',
         };
     }
 
@@ -76,8 +76,8 @@ class KioskDevice extends Model
 
         $wanted = self::SLOTS[$slot];
 
-        // Student school and student bus can each have several tablets.
-        if ($wanted['audience'] === 'students' && $this->audience === 'students') {
+        // Teacher tablets have no device cap. Student school and student bus can each have several tablets.
+        if ($wanted['audience'] === 'teachers' || ($wanted['audience'] === 'students' && $this->audience === 'students')) {
             return false;
         }
 
@@ -112,6 +112,19 @@ class KioskDevice extends Model
         return array_values(array_filter(
             array_keys(self::SLOTS),
             fn (string $slot) => static::deviceBlockingSlot($slot) === null
+        ));
+    }
+
+    /**
+     * Slots a device login may register. Teacher audience only, with no device cap.
+     *
+     * @return list<string>
+     */
+    public static function registrationSlots(): array
+    {
+        return array_values(array_filter(
+            static::openSlots(),
+            fn (string $slot) => $slot === 'teachers'
         ));
     }
 

@@ -83,7 +83,7 @@ class InvoiceController extends Controller
 
         return view('finance.invoices.print', [
             'invoice' => $invoice,
-            'schoolName' => config('app.name', 'ABIS'),
+            'schoolName' => config('app.name', 'NAT KTM'),
         ]);
     }
 

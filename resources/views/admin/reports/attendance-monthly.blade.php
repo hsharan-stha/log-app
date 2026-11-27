@@ -24,7 +24,7 @@
     <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
         <div>
             <h1 class="h3 mb-1">{{ $reportTitle ?? 'Monthly attendance' }}</h1>
-            <p class="text-muted mb-0">{{ $reportBlurb ?? 'Separate summaries for staff, teachers, and students (weekdays).' }}</p>
+            <p class="text-muted mb-0">{{ $reportBlurb ?? 'Separate summaries for staff and students (weekdays).' }}</p>
         </div>
         @if(($reportKind ?? '') === 'workforce')
             <a href="{{ route('admin.reports.attendance.teachers.export', ['month' => $month]) }}" class="btn btn-outline-primary">
@@ -56,7 +56,7 @@
                         <label for="role" class="form-label small text-muted mb-1 fw-semibold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.08em;">Show</label>
                         <select name="role" id="role" class="form-select form-select-lg shadow-sm" style="border-radius: 10px;">
                             <option value="all" @selected($role === 'all')>Everyone</option>
-                            <option value="workforce" @selected($role === 'workforce')>Staff &amp; teachers</option>
+                            <option value="workforce" @selected($role === 'workforce')>Staff</option>
                             <option value="student" @selected($role === 'student')>Students only</option>
                         </select>
                     </div>
@@ -75,8 +75,8 @@
 
     @if($role === 'all' || $role === 'workforce')
         @include('admin.reports.partials.attendance-role-table', [
-            'title' => 'Teachers',
-            'emptyMessage' => 'No teachers yet.',
+            'title' => 'Staff',
+            'emptyMessage' => 'No staff yet.',
             'rows' => $teacherRows,
             'month' => $month,
             'showStudentMeta' => false,

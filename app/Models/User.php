@@ -196,7 +196,7 @@ class User extends Authenticatable
             'admin' => 'Principal',
             'hr' => 'HR',
             'finance' => 'Finance',
-            'teacher' => 'Teacher',
+            'teacher' => 'Staff',
             'student' => 'Student',
             'guardian' => 'Guardian',
             'attendance' => 'Attendance',

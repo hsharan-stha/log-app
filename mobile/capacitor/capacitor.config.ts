@@ -11,7 +11,7 @@ const config: CapacitorConfig = {
   appName: 'Staff Attendance',
   webDir: 'www',
   server: {
-    url: 'https://dev.abis.rohitrokaya.com/attendance',
+    url: 'https://eastwestmc.com.np/attendance',
     cleartext: false,
   },
 };

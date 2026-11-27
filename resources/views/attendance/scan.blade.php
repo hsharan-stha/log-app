@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>School attendance — {{ config('app.name', 'ABIS Portal') }}</title>
+    <title>School attendance — {{ config('app.name', 'NAT KTM') }}</title>
     <link href="{{ asset('vendor/bootstrap/5.3.3/css/bootstrap.min.css') }}" rel="stylesheet">
     <style>
         html {
@@ -160,11 +160,11 @@
 <body class="kot-kiosk">
 <header class="kot-top">
     <div class="kot-brand">
-        <div class="kot-mark" aria-hidden="true">AB</div>
+        <div class="kot-mark" aria-hidden="true">NK</div>
         <div>
             <div class="kot-product">
                 @if(($kioskAudience ?? null) === 'teachers')
-                    Teacher attendance
+                    Staff attendance
                 @elseif(($kioskLocation ?? 'school') === 'bus')
                     Bus attendance
                 @elseif(($kioskAudience ?? null) === 'students')
@@ -257,6 +257,7 @@
 
         let modelsReady = false;
         let cameraLive = false;
+        let cameraStarting = false;
         let verifying = false;
         let tickBusy = false;
         let cooldownUntil = 0;
@@ -264,13 +265,37 @@
         let lastFaceSeenAt = 0;
         let tickTimer = null;
 
+        function isAppleDevice() {
+            const ua = navigator.userAgent || '';
+            return /iPad|iPhone|iPod/.test(ua)
+                || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        }
+
+        function cameraVideoConstraints() {
+            // iPhone and iPad take a long time to open the camera the first time
+            // when a high resolution is requested. A plain user-facing request starts faster.
+            if (isAppleDevice()) {
+                return { facingMode: 'user' };
+            }
+
+            return {
+                facingMode: 'user',
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+            };
+        }
+
         async function loadModels() {
             try {
-                await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-                await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-                await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+                ]);
                 modelsReady = true;
-                statusEl.textContent = 'Models ready.';
+                if (cameraLive) {
+                    statusEl.textContent = 'Position your face in the frame.';
+                }
             } catch (error) {
                 console.error(error);
                 statusEl.textContent = 'Could not load models. Reload or contact support.';
@@ -568,8 +593,17 @@
         }
 
         async function startCamera() {
+            if (cameraLive) {
+                await ensureVideoPlaying();
+                return;
+            }
+            if (cameraStarting) {
+                return;
+            }
+            cameraStarting = true;
             statusEl.textContent = 'Requesting camera…';
 
+            try {
             if (video.srcObject) {
                 try {
                     video.srcObject.getTracks().forEach((t) => t.stop());
@@ -577,20 +611,19 @@
                 video.srcObject = null;
             }
 
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: 'user',
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 },
-                },
-                audio: false,
-            });
-            video.srcObject = stream;
             video.muted = true;
+            video.defaultMuted = true;
             video.playsInline = true;
+            video.setAttribute('muted', 'true');
             video.setAttribute('playsinline', 'true');
             video.setAttribute('webkit-playsinline', 'true');
             video.setAttribute('autoplay', 'true');
+
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: cameraVideoConstraints(),
+                audio: false,
+            });
+            video.srcObject = stream;
 
             try {
                 await video.play();
@@ -620,12 +653,17 @@
 
             startAttendanceLoop();
 
-            const ready = await waitForVideoFrames();
+            const ready = await waitForVideoFrames(isAppleDevice() ? 4000 : 8000);
             if (ready) {
-                statusEl.textContent = 'Position your face in the frame.';
+                statusEl.textContent = modelsReady
+                    ? 'Position your face in the frame.'
+                    : 'Camera on. Loading face models…';
                 resizeOverlay();
             } else {
                 statusEl.textContent = 'Camera started — waiting for video…';
+            }
+            } finally {
+                cameraStarting = false;
             }
         }
 
@@ -649,23 +687,34 @@
             }
         });
 
+        function resumeCameraOnFirstTouch() {
+            const resume = () => {
+                if (!cameraLive) {
+                    startCamera().catch(() => {});
+                    return;
+                }
+                ensureVideoPlaying();
+            };
+            document.addEventListener('touchend', resume, { once: true, passive: true });
+            document.addEventListener('click', resume, { once: true });
+        }
+
         async function beginKiosk() {
             // Decode thank-you WAV into memory so playback is instant on success.
             preloadThankYouAudio();
+            resumeCameraOnFirstTouch();
 
-            await loadModels();
-            if (!modelsReady) {
-                return;
-            }
+            // Open the camera immediately. Face models download in parallel so
+            // the first visit on iPhone does not sit on a blank preview.
             statusEl.textContent = 'Starting camera…';
-            try {
-                await startCamera();
-            } catch (err) {
+            const cameraReady = startCamera().catch((err) => {
                 console.error(err);
                 showResult('danger', 'Unable to access the webcam. Grant permission and try again.');
                 btnStart.classList.remove('d-none');
                 statusEl.textContent = 'Tap “Try camera again” after allowing access.';
-            }
+            });
+
+            await Promise.all([loadModels(), cameraReady]);
         }
 
         beginKiosk();

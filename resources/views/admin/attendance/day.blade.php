@@ -12,7 +12,7 @@
                 · Unattend <strong class="text-danger">{{ $absentCount }}</strong>
                 · Roll {{ $eligibleTotal }}
                 @if($group === 'staff' && ! \Carbon\Carbon::parse($date)->isFuture())
-                    Checkout can be updated for today and earlier days. Hours count the same way, and the day is marked Manual.
+                    Check-in and checkout can be set for today and earlier days. Hours count the same way, and the day is marked Manual.
                 @endif
             </p>
         </div>
@@ -113,6 +113,9 @@
                                         variant="in"
                                         size="sm"
                                     />
+                                    @if($att->manual_checkin)
+                                        <div class="mt-1"><span class="badge text-bg-warning">Manual</span></div>
+                                    @endif
                                 </td>
                                 <td class="text-center py-3 photo-cell" data-label="School out">
                                     @if($att->checkout_time)
@@ -200,12 +203,28 @@
                 </div>
                 <ul class="list-group list-group-flush">
                     @forelse($absent as $user)
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-3">
                             <div>
                                 <div class="fw-medium">{{ $user->name }}</div>
                                 <div class="small text-muted">{{ $user->email ?? '—' }}</div>
                             </div>
-                            <span class="badge text-bg-light text-capitalize border">{{ $user->role }}</span>
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                @if($showManualCheckout)
+                                    <form method="POST" action="{{ route('admin.reports.attendance.staff.checkin', $user) }}" class="checkout-edit">
+                                        @csrf
+                                        <input type="hidden" name="date" value="{{ $date }}">
+                                        <input type="hidden" name="person" value="{{ $user->id }}">
+                                        <div class="checkout-edit__control">
+                                            <input type="time" name="checkin_time" required
+                                                   value="{{ (string) old('person') === (string) $user->id ? old('checkin_time') : '' }}"
+                                                   aria-label="Check-in time for {{ $user->name }}">
+                                            <button type="submit">Check in</button>
+                                        </div>
+                                    </form>
+                                @else
+                                    <span class="badge text-bg-light text-capitalize border">{{ $user->role }}</span>
+                                @endif
+                            </div>
                         </li>
                     @empty
                         <li class="list-group-item text-muted text-center py-4">

@@ -5,7 +5,7 @@
 @section('content')
     <div class="mb-4">
         <h1 class="h3 mb-1">Register attendance kiosk</h1>
-        <p class="text-muted mb-0">Teachers use one kiosk. Students at school and students on the bus can each use more than one tablet. Revoke the teacher kiosk before another teacher tablet can take that place.</p>
+        <p class="text-muted mb-0">Device login registers a staff kiosk only. You can register as many tablets as you need.</p>
     </div>
 
     @if($existingDevice)
@@ -27,9 +27,7 @@
     @else
         @if($activeDevices->isNotEmpty())
             <div class="alert alert-info">
-                Already registered:
-                {{ $activeDevices->map(fn ($device) => $device->name.' ('.$device->audienceLabel().')')->join(', ') }}.
-                Choose an open kiosk below.
+                This tablet can still be registered as another staff kiosk.
             </div>
         @endif
         <div class="card border-0 shadow-sm" style="max-width: 520px;">
@@ -37,13 +35,9 @@
                 <form method="POST" action="{{ route('attendance.setup.store') }}">
                     @csrf
                     <div class="mb-3">
-                        <label class="form-label" for="slot">Kiosk</label>
-                        <select id="slot" name="slot" class="form-select" required>
-                            @foreach($openSlots as $slot)
-                                <option value="{{ $slot }}" @selected(old('slot') === $slot)>{{ \App\Models\KioskDevice::SLOTS[$slot]['label'] }}</option>
-                            @endforeach
-                        </select>
-                        <div class="form-text">Students on the bus scan bus, then school, then school, then bus.</div>
+                        <input type="hidden" name="slot" value="teachers">
+                        <div class="form-label">Audience</div>
+                        <p class="mb-0">Staff</p>
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="name">Device name</label>

@@ -88,8 +88,8 @@ class StaffAttendanceWorkbook
         $sheet->setCellValue('D1', 'Total '.$stats['complete'].' complete · '.self::formatDuration($stats['seconds']));
         $sheet->getStyle('A1:D1')->getFont()->setBold(true);
 
-        $sheet->fromArray(['Date', 'Weekday', 'Check-in', 'Check-out', 'Duration', 'Manual checkout'], null, 'A3');
-        self::headerStyle($sheet, 'A3:F3');
+        $sheet->fromArray(['Date', 'Weekday', 'Check-in', 'Check-out', 'Duration', 'Manual check-in', 'Manual checkout'], null, 'A3');
+        self::headerStyle($sheet, 'A3:G3');
 
         $row = 4;
         for ($day = $start->copy(); $day->lte($end); $day->addDay()) {
@@ -101,16 +101,17 @@ class StaffAttendanceWorkbook
                 self::clock($record?->checkin_time),
                 self::clock($record?->checkout_time),
                 $seconds !== null ? self::formatDuration($seconds) : '',
+                $record?->manual_checkin ? 'Yes' : '',
                 $record?->manual_checkout ? 'Yes' : '',
             ], null, 'A'.$row);
 
             if (! $day->isWeekday()) {
-                $sheet->getStyle('A'.$row.':F'.$row)->getFont()->getColor()->setRGB('94A3B8');
+                $sheet->getStyle('A'.$row.':G'.$row)->getFont()->getColor()->setRGB('94A3B8');
             }
             $row++;
         }
 
-        foreach (range('A', 'F') as $column) {
+        foreach (range('A', 'G') as $column) {
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
         $sheet->freezePane('A4');

@@ -90,7 +90,7 @@ class AttendanceReportController extends Controller
         return $this->monthly($request)->with([
             'reportKind' => 'workforce',
             'reportTitle' => 'Staff attendance report',
-            'reportBlurb' => 'Monthly weekday summary for teachers and staff.',
+            'reportBlurb' => 'Monthly weekday summary for staff.',
         ]);
     }
 
@@ -207,6 +207,61 @@ class AttendanceReportController extends Controller
                 'total_work_decimal_hours' => round($totalWorkSeconds / 3600, 1),
             ],
         ]);
+    }
+
+    public function manualCheckin(Request $request, User $staff): RedirectResponse
+    {
+        $this->ensureStaff($staff);
+        abort_unless(in_array($staff->role, User::CALENDAR_STAFF_ROLES, true), 404);
+
+        $data = $request->validate([
+            'date' => ['required', 'date_format:Y-m-d'],
+            'checkin_time' => ['required', 'date_format:H:i'],
+        ]);
+
+        if (Carbon::parse($data['date'])->startOfDay()->greaterThan(now()->startOfDay())) {
+            return back()->withErrors([
+                'checkin_time' => 'Check-in cannot be set for a future day.',
+            ])->withInput();
+        }
+
+        $checkin = Carbon::parse($data['date'].' '.$data['checkin_time']);
+
+        if ($checkin->greaterThan(now())) {
+            return back()->withErrors([
+                'checkin_time' => 'Check-in time cannot be in the future.',
+            ])->withInput();
+        }
+
+        $attendance = Attendance::query()
+            ->where('user_id', $staff->id)
+            ->whereDate('attendance_date', $data['date'])
+            ->first();
+
+        if ($attendance?->checkin_time !== null) {
+            return back()->withErrors([
+                'checkin_time' => 'This day already has a check-in.',
+            ])->withInput();
+        }
+
+        if ($attendance?->checkout_time !== null && $checkin->gt($attendance->checkout_time->copy()->subHour())) {
+            return back()->withErrors([
+                'checkin_time' => 'Check-in is too close to check-out. You can check in before '.$attendance->checkout_time->copy()->subHour()->format('H:i').'.',
+            ])->withInput();
+        }
+
+        if ($attendance === null) {
+            $attendance = new Attendance([
+                'user_id' => $staff->id,
+                'attendance_date' => $data['date'],
+            ]);
+        }
+
+        $attendance->checkin_time = $checkin;
+        $attendance->manual_checkin = true;
+        $attendance->save();
+
+        return back()->with('success', 'Manual check-in saved for '.$checkin->toFormattedDateString().' at '.$checkin->format('H:i').'.');
     }
 
     public function manualCheckout(Request $request, User $staff): RedirectResponse

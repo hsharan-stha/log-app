@@ -67,7 +67,7 @@ class AttendanceReportTest extends TestCase
         $summary = $book->getSheetByName('Summary');
         $this->assertSame('November 2026', $summary->getCell('B1')->getValue());
         $this->assertSame('Export Teacher', $summary->getCell('A4')->getValue());
-        $this->assertSame('Teacher', $summary->getCell('B4')->getValue());
+        $this->assertSame('Staff', $summary->getCell('B4')->getValue());
         $this->assertSame('8h 45m', $summary->getCell('H4')->getValue());
 
         $sheet = $book->getSheetByName('Export Teacher');
@@ -87,8 +87,13 @@ class AttendanceReportTest extends TestCase
             ->get(route('admin.reports.attendance.students'))
             ->assertOk()
             ->assertSee('Students')
-            ->assertSee('Student report')
-            ->assertSee('Student calendar')
+            ->assertDontSee('Student report')
+            ->assertDontSee('Student calendar')
+            ->assertSee('Staff users')
+            ->assertSee('Staff calendar')
+            ->assertSee('Staff report')
+            ->assertSee('Device login')
+            ->assertSee('Kiosk devices')
             ->assertSee('Student attendance report')
             ->assertSee('Demo Student')
             ->assertDontSee('Demo Teacher')

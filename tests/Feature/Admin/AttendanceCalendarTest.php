@@ -41,7 +41,7 @@ class AttendanceCalendarTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.attendance.index', 'staff'))
             ->assertOk()
-            ->assertSee('Staff & teachers calendar')
+            ->assertSee('Staff calendar')
             ->assertSee('Attend');
 
         $this->actingAs($admin)
@@ -188,6 +188,66 @@ class AttendanceCalendarTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.attendance.day', ['group' => 'students', 'date' => $today]))
             ->assertOk()
-            ->assertDontSee('Checkout time for', false);
+            ->assertDontSee('Checkout time for', false)
+            ->assertDontSee('Check-in time for', false);
+    }
+
+    public function test_admin_can_save_a_manual_checkin_for_unattended_staff(): void
+    {
+        $this->travelTo('2026-11-26 18:30:00');
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $teacher = User::factory()->create(['role' => 'teacher', 'name' => 'Missing Teacher']);
+        $student = User::factory()->create(['role' => 'student', 'name' => 'Missing Student']);
+        $today = now()->toDateString();
+        $day = route('admin.attendance.day', ['group' => 'staff', 'date' => $today]);
+
+        $this->actingAs($admin)
+            ->get($day)
+            ->assertOk()
+            ->assertSee('Check-in time for Missing Teacher', false)
+            ->assertDontSee('Check-in time for Missing Student', false);
+
+        $this->actingAs($admin)
+            ->from($day)
+            ->post(route('admin.reports.attendance.staff.checkin', $teacher), [
+                'date' => $today,
+                'checkin_time' => '19:00',
+                'person' => $teacher->id,
+            ])
+            ->assertRedirect($day)
+            ->assertSessionHasErrors('checkin_time');
+
+        $this->assertNull(Attendance::query()->where('user_id', $teacher->id)->first());
+
+        $this->actingAs($admin)
+            ->from($day)
+            ->post(route('admin.reports.attendance.staff.checkin', $teacher), [
+                'date' => $today,
+                'checkin_time' => '08:15',
+                'person' => $teacher->id,
+            ])
+            ->assertRedirect($day)
+            ->assertSessionHas('success');
+
+        $attendance = Attendance::query()->where('user_id', $teacher->id)->whereDate('attendance_date', $today)->first();
+        $this->assertNotNull($attendance);
+        $this->assertTrue($attendance->manual_checkin);
+        $this->assertSame('08:15', $attendance->checkin_time->format('H:i'));
+        $this->assertNull($attendance->checkin_photo_path);
+
+        $this->actingAs($admin)
+            ->get($day)
+            ->assertOk()
+            ->assertSee('08:15')
+            ->assertSee('Manual')
+            ->assertDontSee('Check-in time for Missing Teacher', false);
+
+        $this->actingAs($admin)
+            ->post(route('admin.reports.attendance.staff.checkin', $student), [
+                'date' => $today,
+                'checkin_time' => '08:15',
+            ])
+            ->assertNotFound();
     }
 }

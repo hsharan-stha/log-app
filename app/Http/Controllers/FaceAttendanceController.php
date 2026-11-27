@@ -59,7 +59,7 @@ class FaceAttendanceController extends Controller
         if ($device?->audience === 'teachers' && $user->isStudent()) {
             return response()->json([
                 'ok' => false,
-                'message' => 'This kiosk is for teachers and staff. Students should use the school or bus kiosk.',
+                'message' => 'This kiosk is for staff. Students should use the school or bus kiosk.',
                 'person_name' => $user->name,
                 'role' => $user->role,
             ], 422);
@@ -68,7 +68,7 @@ class FaceAttendanceController extends Controller
         if ($device?->audience === 'students' && ! $user->isStudent()) {
             return response()->json([
                 'ok' => false,
-                'message' => 'This kiosk is for students. Teachers and staff should use the teacher kiosk.',
+                'message' => 'This kiosk is for students. Staff should use the staff kiosk.',
                 'person_name' => $user->name,
                 'role' => $user->role,
             ], 422);

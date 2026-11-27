@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', ($staff->isStudent() ? 'Student' : ($staff->isOfficeStaff() ? 'Staff' : 'Teacher')).' monthly attendance')
+@section('title', ($staff->isStudent() ? 'Student' : 'Staff').' monthly attendance')
 
 @section('content')
     <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
@@ -141,6 +141,9 @@
                                     variant="in"
                                     size="sm"
                                 />
+                                @if($row->manual_checkin)
+                                    <div class="mt-1"><span class="badge text-bg-warning">Manual</span></div>
+                                @endif
                             @else
                                 <span class="small text-muted">—</span>
                             @endif

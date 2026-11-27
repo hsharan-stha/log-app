@@ -17,7 +17,7 @@ class KioskSetupController extends Controller
 
         return view('attendance.setup', [
             'existingDevice' => $existing,
-            'openSlots' => KioskDevice::openSlots(),
+            'openSlots' => KioskDevice::registrationSlots(),
             'activeDevices' => KioskDevice::query()->whereNull('revoked_at')->orderBy('name')->get(),
         ]);
     }
@@ -33,7 +33,7 @@ class KioskSetupController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
-            'slot' => ['required', 'in:'.implode(',', array_keys(KioskDevice::SLOTS))],
+            'slot' => ['required', 'in:teachers'],
         ]);
 
         $blocking = KioskDevice::deviceBlockingSlot($data['slot']);

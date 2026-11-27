@@ -168,11 +168,11 @@ class BusSchoolAttendanceTest extends TestCase
 
         $this->verifyAs($operator, $teacherToken, $student)
             ->assertStatus(422)
-            ->assertJsonFragment(['message' => 'This kiosk is for teachers and staff. Students should use the school or bus kiosk.']);
+            ->assertJsonFragment(['message' => 'This kiosk is for staff. Students should use the school or bus kiosk.']);
 
         $this->verifyAs($operator, $busToken, $teacher)
             ->assertStatus(422)
-            ->assertJsonFragment(['message' => 'This kiosk is for students. Teachers and staff should use the teacher kiosk.']);
+            ->assertJsonFragment(['message' => 'This kiosk is for students. Staff should use the staff kiosk.']);
     }
 
     public function test_non_bus_student_rejected_at_bus_kiosk(): void

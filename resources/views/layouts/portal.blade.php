@@ -41,7 +41,7 @@
 @endphp
 <nav class="portal-nav navbar navbar-expand-lg navbar-dark mb-4">
     <div class="container">
-        <a class="navbar-brand fw-semibold" href="{{ route($home) }}">ABIS Portal</a>
+        <a class="navbar-brand fw-semibold" href="{{ route($home) }}">NAT KTM</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#portalNav">
             <span class="navbar-toggler-icon"></span>
         </button>
